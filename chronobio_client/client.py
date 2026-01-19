@@ -88,7 +88,7 @@ class PlayerGameClient(Client):
             num_employees = len(employees)
             num_tractors = len(tractors)
 
-            # PHASE 1 : Démarrage MINIMALISTE (2 ouvriers, survie assurée)
+            # PHASE 1 : Démarrage ULTRA-MINIMALISTE (1 seul ouvrier!)
             if day == 0:
                 # PAS D'EMPRUNT ! On démarre avec 100k€ de base
                 # Acheter 2 champs seulement (simplicité)
@@ -96,9 +96,10 @@ class PlayerGameClient(Client):
                 self.add_command("0 ACHETER_CHAMP")
 
             elif day == 1:
-                # Embaucher SEULEMENT 2 ouvriers (ultra-minimaliste!)
+                # Embaucher SEULEMENT 1 ouvrier (économie maximale!)
+                # Salaires réduits = plus de temps pour première récolte
                 self.add_command("0 EMPLOYER")
-                self.add_command("0 EMPLOYER")
+                print("  👔 EMPLOYER 1 ouvrier (démarrage prudent)")
                 # Acheter 1 tracteur
                 self.add_command("0 ACHETER_TRACTEUR")
 
@@ -107,28 +108,28 @@ class PlayerGameClient(Client):
                 self.add_command("0 ACHETER_CHAMP")
 
             elif day == 3:
-                # Semer 2 champs avec 2 ouvriers (simple et sûr)
+                # Semer 1 seul champ (on n'a qu'1 ouvrier)
                 available = [e.get("id") for e in employees
                            if e.get("location") == "FARM" and e.get("tractor") is None]
-                if len(available) >= 2:
+                if len(available) >= 1:
                     self.add_command(f"{available[0]} SEMER PATATE 1")
-                    self.add_command(f"{available[1]} SEMER TOMATE 2")
-                    print("  🌱 Semis jour 3: 2 champs")
-                elif len(available) == 1:
-                    self.add_command(f"{available[0]} SEMER PATATE 1")
-                    print("  🌱 Semis jour 3: 1 champ")
+                    print("  🌱 Semis jour 3: PATATE champ 1")
 
             elif day == 4:
-                # Attendre que les ouvriers reviennent (pas d'action)
-                print("  ⏸️ Pause stratégique: attente retour ouvriers")
+                # Semer 2ème champ
+                available = [e.get("id") for e in employees
+                           if e.get("location") == "FARM" and e.get("tractor") is None]
+                if len(available) >= 1:
+                    self.add_command(f"{available[0]} SEMER TOMATE 2")
+                    print("  🌱 Semis jour 4: TOMATE champ 2")
 
             elif day == 5:
-                # Semer le 3ème champ
+                # Semer 3ème champ
                 available = [e.get("id") for e in employees
                            if e.get("location") == "FARM" and e.get("tractor") is None]
                 if len(available) >= 1:
                     self.add_command(f"{available[0]} SEMER POIREAU 3")
-                    print("  🌱 Semis jour 5: champ 3")
+                    print("  🌱 Semis jour 5: POIREAU champ 3")
 
             # PHASE 2 : Production HYBRIDE (jour 6+)
             else:
@@ -172,8 +173,21 @@ class PlayerGameClient(Client):
                                 self.add_command(f"0 VENDRE {field_num}")
                                 break  # Une seule vente par tour (gérant occupé 2 jours)
 
-                # PRIORITÉ 2 : RÉCOLTER TOUS les légumes mûrs (utilise tous les ouvriers!)
+                # PRIORITÉ 2 : RÉCOLTER TOUS les légumes mûrs (avec gestion tracteurs!)
                 if num_tractors > 0 and all_available:
+                    # Trouver les tracteurs disponibles (pas déjà assignés à un ouvrier)
+                    tractors = my_farm.get("tractors", [])
+                    used_tractors = set()
+
+                    # Marquer les tracteurs déjà utilisés par des ouvriers
+                    for emp in employees:
+                        if emp.get("tractor") is not None:
+                            tractor = emp.get("tractor", {})
+                            if isinstance(tractor, dict):
+                                used_tractors.add(tractor.get("id"))
+
+                    available_tractors = [t.get("id") for t in tractors if t.get("id") not in used_tractors]
+
                     recoltes = 0
                     for field in owned_fields:
                         content = field.get("content", "NONE")
@@ -182,17 +196,28 @@ class PlayerGameClient(Client):
                             location = field.get("location", "")
                             if location.startswith("FIELD"):
                                 field_num = location.replace("FIELD", "")
-                                # Trouver un ouvrier disponible (tous sans tracteur)
+
+                                # Trouver un ouvrier ET un tracteur disponibles
+                                emp_found = None
+                                tractor_found = None
+
                                 for emp_id in all_available:
-                                    if emp_id not in used_employees:
-                                        self.add_command(f"{emp_id} STOCKER {field_num} 1")
-                                        used_employees.add(emp_id)
-                                        print(f"  🌾 RÉCOLTER champ {field_num} : {content}")
-                                        recoltes += 1
+                                    if emp_id not in used_employees and available_tractors:
+                                        emp_found = emp_id
+                                        tractor_found = available_tractors[0]
                                         break
-                                # Ne pas break ici ! Récolter TOUS les champs prêts
+
+                                if emp_found and tractor_found:
+                                    self.add_command(f"{emp_found} STOCKER {field_num} {tractor_found}")
+                                    used_employees.add(emp_found)
+                                    available_tractors.remove(tractor_found)
+                                    print(f"  🌾 RÉCOLTER champ {field_num} : {content} (ouvrier {emp_found}, tracteur {tractor_found})")
+                                    recoltes += 1
+
                     if recoltes > 0:
                         print(f"  ✅ {recoltes} récolte(s) effectuée(s)")
+                    elif len(available_tractors) == 0:
+                        print("  ⏸️  Récolte impossible: tous les tracteurs occupés")
 
                 # PRIORITÉ 2 : VENDRE selon situation (équilibre cash/stock)
                 factory = my_farm.get("soup_factory", {})
@@ -342,10 +367,13 @@ class PlayerGameClient(Client):
                 # Ratio équilibré : 1.5 ouvriers par champ
                 target_employees = min(MAX_EMPLOYEES, int(num_fields * 1.5))
 
-                # Embaucher TRÈS PROGRESSIVEMENT
-                if money > safety_buffer + 80000 and num_employees < target_employees:
+                # Embaucher progressivement APRÈS première récolte
+                # Seuil réduit pour le 2ème ouvrier (nécessaire pour la production)
+                hiring_threshold = 40000 if num_employees < 2 else safety_buffer + 80000
+
+                if money > hiring_threshold and num_employees < target_employees:
                     self.add_command("0 EMPLOYER")
-                    print(f"  👤 EMPLOYER (total: {num_employees + 1})")
+                    print(f"  👤 EMPLOYER (total: {num_employees + 1}/{target_employees})")
 
                 # Acheter des tracteurs seulement si très rentable
                 if money > safety_buffer + 100000 and num_tractors < MAX_TRACTORS:
