@@ -79,8 +79,8 @@ class PlayerGameClient(Client):
             employees = my_farm.get("employees", [])
             tractors = my_farm.get("tractors", [])
 
-            # Buffer adaptatif SÉCURISÉ (survie avant score)
-            safety_buffer = total_salaries * 15  # 15 jours (sécurité maximale)
+            # Buffer adaptatif ÉQUILIBRÉ (production + sécurité)
+            safety_buffer = total_salaries * 12  # 12 jours (équilibre)
 
             # Compter les champs achetés (bought = True)
             owned_fields = [f for f in fields if f.get("bought", False)]
@@ -109,40 +109,42 @@ class PlayerGameClient(Client):
                 self.add_command("0 ACHETER_CHAMP")
 
             elif day == 3:
-                # Semer les 3 premiers champs avec les ouvriers VRAIMENT disponibles
-                available = [e.get("id") for e in employees
-                           if e.get("location") == "FARM" and e.get("tractor") is None]
+                # Semer les 3 premiers champs - MODE AGRESSIF
+                available = [e.get("id") for e in employees if e.get("tractor") is None]
                 if len(available) >= 3:
                     self.add_command(f"{available[0]} SEMER PATATE 1")
                     self.add_command(f"{available[1]} SEMER TOMATE 2")
                     self.add_command(f"{available[2]} SEMER POIREAU 3")
-                    print(f"  🌱 Semis jour 3: {len(available)} ouvriers utilisés")
+                    print(f"  🌱 Semis jour 3: {len(available)} ouvriers")
 
             elif day == 4:
-                # Semer les 2 derniers champs avec les ouvriers VRAIMENT disponibles
-                available = [e.get("id") for e in employees
-                           if e.get("location") == "FARM" and e.get("tractor") is None]
+                # Semer les 2 derniers champs - MODE AGRESSIF
+                available = [e.get("id") for e in employees if e.get("tractor") is None]
                 if len(available) >= 2:
                     self.add_command(f"{available[0]} SEMER OIGNON 4")
                     self.add_command(f"{available[1]} SEMER COURGETTE 5")
-                    print(f"  🌱 Semis jour 4: {len(available)} ouvriers utilisés")
-                else:
-                    print(f"  ⏸️ Semis jour 4 reporté: seulement {len(available)} ouvriers dispo")
+                    print(f"  🌱 Semis jour 4: {len(available)} ouvriers")
+                elif len(available) > 0:
+                    # Si on a au moins 1 ouvrier, on sème ce qu'on peut
+                    self.add_command(f"{available[0]} SEMER OIGNON 4")
+                    print("  🌱 Semis partiel jour 4: 1 ouvrier")
 
-            # PHASE 2 : Production continue (jour 5+)
+            # PHASE 2 : Production AGRESSIVE (jour 5+)
             else:
-                # Obtenir les IDs des ouvriers VRAIMENT DISPONIBLES
-                # Un ouvrier est disponible s'il est à la FARM ET sans tracteur
+                # Obtenir TOUS les ouvriers sans tracteur (même s'ils sont dans les champs)
+                # STRATÉGIE AGRESSIVE: On essaie d'utiliser tous les ouvriers
+                # Le serveur rejettera les actions si l'ouvrier est vraiment occupé
                 available_employees = [
                     emp.get("id") for emp in employees
-                    if emp.get("location") == "FARM" and emp.get("tractor") is None
+                    if emp.get("tractor") is None
                 ]
                 used_employees = set()
 
-                # Debug: afficher les ouvriers disponibles
-                print(f"  👥 Ouvriers: {len(available_employees)} vraiment dispo (à la FARM), {len(employees) - len(available_employees)} occupés")
-                if len(available_employees) == 0 and len(employees) > 0:
-                    print("  ⚠️ TOUS les ouvriers sont occupés, on attend...")
+                # Debug: afficher les ouvriers
+                at_farm = len([e for e in employees if e.get("location") == "FARM"])
+                print(f"  👥 Ouvriers: {len(available_employees)} sans tracteur, {at_farm} à la FARM")
+                if len(available_employees) == 0:
+                    print("  ⚠️ Tous les ouvriers ont un tracteur assigné")
 
                 # PRIORITÉ 1 : VENDRE directement depuis champ (si urgence ou pas de tracteur)
                 # Vendre est moins rentable que cuisiner, mais donne du cash immédiat
@@ -189,16 +191,16 @@ class PlayerGameClient(Client):
                 soups_ready = factory.get("days_off", 0) == 0
                 total_stock = sum(stock.values())
 
-                # Stratégie : CUISINER SOUVENT avec DIVERSITÉ (vente automatique!)
+                # Stratégie : CUISINER AGRESSIVEMENT (vente automatique!)
                 # Vérifier qu'on a les 5 types de légumes pour faire des soupes "5 légumes"
-                min_each_veg = 20  # Minimum de chaque légume pour cuisiner
+                min_each_veg = 10  # Minimum réduit à 10 (au lieu de 20)
                 has_diversity = all(stock.get(veg, 0) >= min_each_veg for veg in ["POTATO", "LEEK", "TOMATO", "ONION", "ZUCCHINI"])
 
-                # Seuil BEAUCOUP plus bas : cuisiner dès 100 légumes au lieu de 500!
-                min_stock_to_cook = 100
+                # Seuil ULTRA-BAS : cuisiner dès 50 légumes!
+                min_stock_to_cook = 50
 
-                # Compter combien d'ouvriers peuvent cuisiner (plusieurs en parallèle!)
-                max_cooks = min(3, len([e for e in available_employees if e not in used_employees]))
+                # Utiliser TOUS les ouvriers disponibles pour cuisiner
+                max_cooks = min(5, len([e for e in available_employees if e not in used_employees]))
 
                 # PRIORITÉ 4 : CUISINER avec PLUSIEURS ouvriers (revenus x3!)
                 if soups_ready and total_stock >= min_stock_to_cook and available_employees:
@@ -319,26 +321,26 @@ class PlayerGameClient(Client):
                         print(f"  🔴 LICENCIER ouvrier {emp_id} (salaire: {salary}€)")
                         self.add_command(f"0 LICENCIER {emp_id}")
 
-                # PRIORITÉ 7 : EXPANSION ORGANIQUE (croissance sans dette!)
+                # PRIORITÉ 7 : EXPANSION AGRESSIVE (production maximale!)
 
-                # Limites raisonnables pour éviter les salaires explosifs
-                MAX_EMPLOYEES = 7    # Maximum 7 ouvriers (équilibre)
-                MAX_TRACTORS = 2     # Maximum 2 tracteurs (suffisant)
+                # Limites plus élevées pour maximiser la production
+                MAX_EMPLOYEES = 8    # Maximum 8 ouvriers
+                MAX_TRACTORS = 3     # Maximum 3 tracteurs
                 # MAX_FIELDS = 5 déjà atteint au jour 2
 
                 # PAS DE DETTE = PAS DE REMBOURSEMENT NÉCESSAIRE
                 # (score toujours positif!)
 
-                # Ratio équilibré : 1.4 ouvriers par champ
-                target_employees = min(MAX_EMPLOYEES, int(num_fields * 1.4))
+                # Ratio agressif : 1.6 ouvriers par champ
+                target_employees = min(MAX_EMPLOYEES, int(num_fields * 1.6))
 
-                # Embaucher progressivement si on a beaucoup d'argent
-                if money > safety_buffer + 60000 and num_employees < target_employees:
+                # Embaucher RAPIDEMENT si on a de l'argent
+                if money > safety_buffer + 40000 and num_employees < target_employees:
                     self.add_command("0 EMPLOYER")
                     print(f"  👤 EMPLOYER (total: {num_employees + 1})")
 
-                # Acheter un 2ème tracteur si rentable
-                if money > safety_buffer + 80000 and num_tractors < MAX_TRACTORS:
+                # Acheter des tracteurs progressivement
+                if money > safety_buffer + 60000 and num_tractors < MAX_TRACTORS:
                     self.add_command("0 ACHETER_TRACTEUR")
                     print(f"  🚜 ACHETER_TRACTEUR (total: {num_tractors + 1})")
 
