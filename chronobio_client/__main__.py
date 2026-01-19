@@ -35,6 +35,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    client: PlayerGameClient | None = None
     try:
         client = PlayerGameClient(args.address, args.port, args.username)
         client.run()
@@ -42,9 +43,17 @@ def main() -> None:
         print("\nArrêt du client...")
         sys.exit(0)
     except Exception as e:
-        print(f"Erreur: {e}", file=sys.stderr)
+        print(f"\n❌ Erreur fatale: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
+
+        # Afficher les infos de debug utiles
+        if client:
+            print("\n🔍 Informations de debug:")
+            print(f"  Serveur: {args.address}:{args.port}")
+            print(f"  Utilisateur: {args.username}")
+            print(f"  Dernières commandes envoyées: {client._commands}")
+
         sys.exit(1)
 
 

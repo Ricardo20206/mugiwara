@@ -3,6 +3,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from chronobio.game.exceptions import ChronobioNetworkError
 
 
 class TestPlayerGameClient:
@@ -45,6 +46,63 @@ class TestPlayerGameClient:
         self.client.send_json.assert_called_once_with({
             "commands": ["0 ACHETER_CHAMP", "1 SEMER PATATE 1"]
         })
+
+    def test_send_commands_empty(self):
+        """Test de l'envoi de commandes vides."""
+        self.client.send_json = Mock()
+        self.client.send_commands()
+        self.client.send_json.assert_called_once_with({"commands": []})
+
+    def test_send_commands_network_error(self):
+        """Test de la gestion des erreurs réseau lors de l'envoi."""
+        self.client.add_command("0 ACHETER_CHAMP")
+        self.client.send_json = Mock(side_effect=ChronobioNetworkError())
+
+        with pytest.raises(ChronobioNetworkError):
+            self.client.send_commands()
+
+        # Les commandes ne doivent pas être effacées en cas d'erreur
+        assert len(self.client._commands) == 1
+        assert self.client._commands[0] == "0 ACHETER_CHAMP"
+
+    def test_read_json_with_retry_success(self):
+        """Test de la lecture avec retry en cas de succès."""
+        expected_data = {"day": 1, "farms": []}
+        self.client.read_json = Mock(return_value=expected_data)
+
+        result = self.client.read_json_with_retry()
+
+        assert result == expected_data
+        self.client.read_json.assert_called_once()
+
+    def test_read_json_with_retry_eventual_success(self):
+        """Test de la lecture avec retry: succès après échecs."""
+        expected_data = {"day": 1, "farms": []}
+        # Échoue 2 fois puis réussit
+        self.client.read_json = Mock(
+            side_effect=[
+                ChronobioNetworkError(),
+                ChronobioNetworkError(),
+                expected_data
+            ]
+        )
+        self.client._retry_delay = 0.01  # Réduire le délai pour les tests
+
+        result = self.client.read_json_with_retry()
+
+        assert result == expected_data
+        assert self.client.read_json.call_count == 3
+
+    def test_read_json_with_retry_max_retries(self):
+        """Test de la lecture avec retry: échec après max tentatives."""
+        self.client.read_json = Mock(side_effect=ChronobioNetworkError())
+        self.client._retry_delay = 0.01  # Réduire le délai pour les tests
+        self.client._max_retries = 3
+
+        with pytest.raises(ChronobioNetworkError):
+            self.client.read_json_with_retry()
+
+        assert self.client.read_json.call_count == 3
 
 
 class TestVegetableBalancing:

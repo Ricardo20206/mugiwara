@@ -12,18 +12,17 @@ class Field:
         location = data.get("location", "")
         if isinstance(location, str) and location.startswith("FIELD"):
             # Extraire le numéro de "FIELD1" -> 1
-            self.number: int = int(location.replace("FIELD", ""))
+            self.number = int(location.replace("FIELD", ""))
         else:
-            self.number: int = data.get("number", 0)
+            self.number = data.get("number", 0)
 
         # Gérer "content" ou "vegetable" pour le légume
         content = data.get("content", "")
         if content and content != "NONE":
             self.vegetable: str | None = content
         else:
-            self.vegetable: str | None = data.get("vegetable")
-            if self.vegetable == "NONE":
-                self.vegetable = None
+            vegetable_value = data.get("vegetable")
+            self.vegetable = None if vegetable_value == "NONE" else vegetable_value
 
         self.water_needed: int = data.get("needed_water", data.get("water_needed", 0))
         self.watered: int = data.get("watered", 0)
