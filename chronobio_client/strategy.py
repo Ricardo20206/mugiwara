@@ -1,6 +1,5 @@
 """Stratégie de jeu optimisée."""
 
-from typing import List
 
 from chronobio_client.actions import Actions
 from chronobio_client.game_state import Field, GameState
@@ -30,35 +29,35 @@ class Strategy:
         self.vegetable_rotation = 0  # Pour varier les légumes
         self.turn_count = 0  # Compteur de tours
 
-    def get_actions(self, game_state: GameState) -> List[str]:
+    def get_actions(self, game_state: GameState) -> list[str]:
         """Génère les actions - MODE OBSERVATION PURE (pas d'investissements)."""
-        actions: List[str] = []
+        actions: list[str] = []
         self.turn_count += 1
-        
+
         # Créer une copie de l'état pour tracker les ouvriers utilisés
         used_workers = set()
         used_fields = set()
-        
+
         # NE RIEN FAIRE qui coûte de l'argent pendant les premiers tours
         # Juste observer ce qui se passe
-        
+
         # Seulement faire des actions GRATUITES si on a déjà des ressources
         # (ce qui ne devrait pas être le cas au début)
-        
+
         # PRIORITÉ 1: Arroser (gratuit) - seulement si on a des champs ET des ouvriers
         if len(game_state.fields) > 0 and len(game_state.workers) > 0:
             new_actions, used_workers, used_fields = self._water_fields_safe(
                 game_state, used_workers, set()
             )
             actions.extend(new_actions)
-        
+
         # PRIORITÉ 2: Semer (gratuit) - seulement si on a des champs vides ET des ouvriers
         if len(game_state.fields) > 0 and len(game_state.workers) > 0:
             new_actions, used_workers, used_fields = self._sow_fields_safe(
                 game_state, used_workers, used_fields, []
             )
             actions.extend(new_actions)
-        
+
         # Ne JAMAIS acheter de champs
         # Ne JAMAIS embaucher d'ouvriers
         # Ne JAMAIS acheter de tracteurs
@@ -66,9 +65,9 @@ class Strategy:
 
         return actions
 
-    def _buy_fields(self, game_state: GameState, available_money: int, required_reserve: int) -> List[str]:
+    def _buy_fields(self, game_state: GameState, available_money: int, required_reserve: int) -> list[str]:
         """Achete des champs si possible - VERSION TRES PRUDENTE."""
-        actions: List[str] = []
+        actions: list[str] = []
         owned_fields_count = len(game_state.fields)
 
         # Acheter UN SEUL champ à la fois avec une GRANDE marge de sécurité
@@ -82,26 +81,26 @@ class Strategy:
 
         return actions
 
-    def _employ_workers_force(self, game_state: GameState, available_money: int, required_reserve: int) -> List[str]:
+    def _employ_workers_force(self, game_state: GameState, available_money: int, required_reserve: int) -> list[str]:
         """Force l'embauche d'un ouvrier (utilisé quand on a des champs mais aucun ouvrier)."""
-        actions: List[str] = []
-        
+        actions: list[str] = []
+
         # Coût approximatif d'un nouvel ouvrier avec GRANDE marge
         estimated_new_worker_salary = WORKER_SALARY_FIRST_MONTH
         worker_cost = estimated_new_worker_salary * 10  # Estimation très large pour sécurité
-        
+
         # Ne pas embaucher si on n'a pas BEAUCOUP d'argent
         total_needed = worker_cost + required_reserve + 10000  # Marge supplémentaire
         if available_money < total_needed:
             return actions
-        
+
         # Embaucher UN ouvrier (force l'embauche)
         actions.append(Actions.employ())
         return actions
 
-    def _employ_workers(self, game_state: GameState, available_money: int, required_reserve: int) -> List[str]:
+    def _employ_workers(self, game_state: GameState, available_money: int, required_reserve: int) -> list[str]:
         """Embauche des ouvriers si nécessaire - VERSION TRES PRUDENTE."""
-        actions: List[str] = []
+        actions: list[str] = []
         workers_count = len(game_state.workers)
 
         # Ne pas embaucher si on n'a pas de champs (inutile sans champs à travailler)
@@ -127,9 +126,9 @@ class Strategy:
 
         return actions
 
-    def _buy_tractors(self, game_state: GameState, available_money: int, required_reserve: int) -> List[str]:
+    def _buy_tractors(self, game_state: GameState, available_money: int, required_reserve: int) -> list[str]:
         """Achète des tracteurs si nécessaire."""
-        actions: List[str] = []
+        actions: list[str] = []
         tractors_count = len(game_state.tractors)
         fields_count = len(game_state.fields)
 
@@ -148,8 +147,8 @@ class Strategy:
         return actions
 
     def _sow_fields_safe(
-        self, game_state: GameState, used_workers: set, used_fields: set, newly_bought_fields: List[int] = None
-    ) -> tuple[List[str], set, set]:
+        self, game_state: GameState, used_workers: set, used_fields: set, newly_bought_fields: list[int] = None
+    ) -> tuple[list[str], set, set]:
         """Sème des légumes sur les champs vides (version sécurisée).
         
         Args:
@@ -157,8 +156,8 @@ class Strategy:
         """
         if newly_bought_fields is None:
             newly_bought_fields = []
-            
-        actions: List[str] = []
+
+        actions: list[str] = []
         empty_fields = game_state.get_empty_fields()
         available_workers = [
             w for w in game_state.get_available_workers()
@@ -197,16 +196,16 @@ class Strategy:
 
         return actions, used_workers, used_fields
 
-    def _sow_fields(self, game_state: GameState) -> List[str]:
+    def _sow_fields(self, game_state: GameState) -> list[str]:
         """Sème des légumes sur les champs vides (ancienne méthode, conservée pour compatibilité)."""
         actions, _, _ = self._sow_fields_safe(game_state, set(), set())
         return actions
 
     def _water_fields_safe(
         self, game_state: GameState, used_workers: set, used_fields: set
-    ) -> tuple[List[str], set, set]:
+    ) -> tuple[list[str], set, set]:
         """Arrose les champs qui en ont besoin (version sécurisée)."""
-        actions: List[str] = []
+        actions: list[str] = []
         fields_needing_water = game_state.get_fields_needing_watering()
         available_workers = [
             w for w in game_state.get_available_workers()
@@ -230,16 +229,16 @@ class Strategy:
 
         return actions, used_workers, used_fields
 
-    def _water_fields(self, game_state: GameState) -> List[str]:
+    def _water_fields(self, game_state: GameState) -> list[str]:
         """Arrose les champs qui en ont besoin (ancienne méthode, conservée pour compatibilité)."""
         actions, _, _ = self._water_fields_safe(game_state, set(), set())
         return actions
 
     def _store_vegetables_safe(
         self, game_state: GameState, used_workers: set, used_fields: set
-    ) -> tuple[List[str], set, set]:
+    ) -> tuple[list[str], set, set]:
         """Stocke les légumes récoltables dans l'usine (version sécurisée)."""
-        actions: List[str] = []
+        actions: list[str] = []
         harvestable_fields = game_state.get_harvestable_fields()
         available_workers = [
             w for w in game_state.get_available_workers()
@@ -265,16 +264,16 @@ class Strategy:
 
         return actions, used_workers, used_fields
 
-    def _store_vegetables(self, game_state: GameState) -> List[str]:
+    def _store_vegetables(self, game_state: GameState) -> list[str]:
         """Stocke les légumes récoltables dans l'usine (ancienne méthode, conservée pour compatibilité)."""
         actions, _, _ = self._store_vegetables_safe(game_state, set(), set())
         return actions
 
     def _cook_soups_safe(
         self, game_state: GameState, used_workers: set
-    ) -> tuple[List[str], set]:
+    ) -> tuple[list[str], set]:
         """Cuisine des soupes si l'usine n'est pas arrêtée (version sécurisée)."""
-        actions: List[str] = []
+        actions: list[str] = []
 
         # Ne pas cuisiner si l'usine est arrêtée
         if game_state.soup_factory_shutdown > 0:
@@ -291,7 +290,7 @@ class Strategy:
             w for w in game_state.get_available_workers()
             if w.number not in used_workers
         ]
-        
+
         # Utiliser jusqu'à 2 ouvriers pour cuisiner (si on en a assez)
         workers_to_use = min(2, len(available_workers))
         for i in range(workers_to_use):
@@ -301,22 +300,22 @@ class Strategy:
 
         return actions, used_workers
 
-    def _cook_soups(self, game_state: GameState) -> List[str]:
+    def _cook_soups(self, game_state: GameState) -> list[str]:
         """Cuisine des soupes si l'usine n'est pas arrêtée (ancienne méthode, conservée pour compatibilité)."""
         actions, _ = self._cook_soups_safe(game_state, set())
         return actions
 
-    def _sell_vegetables(self, game_state: GameState) -> List[str]:
+    def _sell_vegetables(self, game_state: GameState) -> list[str]:
         """Vend des légumes d'un champ si on manque vraiment d'argent et qu'on a trop de stock."""
-        actions: List[str] = []
-        
+        actions: list[str] = []
+
         # Ne vendre que si on manque vraiment d'argent (moins de 5000€)
         # et qu'on a des champs récoltables qu'on ne peut pas stocker
         if game_state.money < 5000:
             harvestable_fields = game_state.get_harvestable_fields()
             available_tractors = game_state.get_available_tractors()
             available_workers = game_state.get_available_workers()
-            
+
             # Vendre seulement si on a un champ récoltable mais pas de moyen de le stocker
             if harvestable_fields and (not available_tractors or not available_workers):
                 # Vendre le premier champ récoltable

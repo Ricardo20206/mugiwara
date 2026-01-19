@@ -414,6 +414,74 @@ tests/test_client.py ......................                    [100%]
 
 Plus de détails dans `tests/README.md`.
 
+## 🧪 Tests et Qualité
+
+### Lancer les tests
+
+**Solution simple (Windows) :**
+```powershell
+.\lancer_tests.ps1
+```
+
+**Ou manuellement :**
+```bash
+# Installer les dépendances de test
+pip install -r requirements-dev.txt
+
+# Lancer tous les tests
+pytest
+
+# Avec rapport de couverture
+pytest --cov=chronobio_client --cov-report=html
+
+# Voir le rapport
+start htmlcov/index.html
+```
+
+### Qualimétrie
+
+```bash
+# Linter avec Ruff
+ruff check .
+
+# Formatter avec Ruff
+ruff format .
+
+# Type checking avec mypy
+mypy chronobio_client
+```
+
+### Hooks pré-commit (bonus)
+
+```bash
+# Installer pre-commit
+pip install pre-commit
+
+# Activer les hooks
+pre-commit install
+
+# Lancer manuellement
+pre-commit run --all-files
+```
+
+Les hooks pré-commit vont automatiquement :
+- ✅ Vérifier le code avec Ruff
+- ✅ Formatter le code
+- ✅ Vérifier les types avec mypy
+- ✅ Lancer les tests avec pytest
+- ✅ Vérifier la couverture (≥ 95%)
+
+### Intégration Continue
+
+Le projet utilise GitHub Actions pour :
+- ✅ Exécuter les tests sur chaque push/PR
+- ✅ Vérifier la couverture de code (≥ 95%)
+- ✅ Vérifier la qualité du code (Ruff)
+- ✅ Vérifier les types (mypy)
+- ✅ **Refuser les PR** qui baissent la qualité
+
+Voir `.github/workflows/ci.yml` pour les détails.
+
 ## Support
 
 Pour toute question, consultez la documentation officielle de Chronobio.

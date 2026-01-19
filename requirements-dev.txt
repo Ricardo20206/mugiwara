@@ -1,0 +1,16 @@
+# Dépendances de développement et tests
+
+# Tests
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+coverage>=7.3.0
+
+# Qualimétrie
+ruff>=0.1.0
+
+# Type checking
+mypy>=1.6.0
+
+# Dépendances principales
+chronobio

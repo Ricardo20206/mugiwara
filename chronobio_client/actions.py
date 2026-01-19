@@ -1,6 +1,5 @@
 """Actions possibles dans le jeu."""
 
-from typing import List, Optional
 
 
 class Actions:
@@ -57,7 +56,7 @@ class Actions:
         return f"{manager} EMPRUNTER {amount}"
 
     @staticmethod
-    def move(worker: int, location: int) -> Optional[str]:
+    def move(_worker: int, _location: int) -> str | None:
         """Déplacer un ouvrier vers un lieu."""
         # Le déplacement n'est pas une action, mais nécessaire pour certaines actions
         # Cette méthode retourne None car le déplacement se fait automatiquement
