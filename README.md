@@ -37,12 +37,57 @@ Ce script lance automatiquement :
 - 1 viewer (interface graphique)
 - 5 clients (dont le vôtre)
 
+### Lancement manuel (optionnel)
+
+Si vous préférez lancer les composants manuellement ou personnaliser le nombre de clients :
+
+**1. Activer l'environnement virtuel (dans chaque terminal) :**
+```powershell
+.venv\Scripts\activate
+```
+
+**2. Lancer le serveur (terminal 1) :**
+```bash
+python -m chronobio.game.server -p 16210
+```
+
+**3. Lancer le viewer (terminal 2) :**
+```bash
+python -m chronobio.viewer -p 16210 --width 1100 --height 700
+```
+
+**4. Lancer votre client (terminal 3) :**
+```bash
+python -m chronobio_client -a localhost -p 16210 -u mugiwara
+```
+
+**5. Lancer 4 autres clients (terminaux 4-7) :**
+```bash
+# Terminal 4
+python -m chronobio_client -a localhost -p 16210 -u Client2
+
+# Terminal 5
+python -m chronobio_client -a localhost -p 16210 -u Client3
+
+# Terminal 6
+python -m chronobio_client -a localhost -p 16210 -u Client4
+
+# Terminal 7
+python -m chronobio_client -a localhost -p 16210 -u Client5
+```
+
+**Notes importantes :**
+- Attendez 2-3 secondes entre chaque lancement
+- Le serveur démarre la partie **uniquement quand 5 clients** sont connectés
+- Pour changer le nom de votre ferme, modifiez le paramètre `-u mugiwara`
+- Pour changer le port, modifiez `-p 16210` (doit être identique partout)
+
 ### Résultat
 
 Vous verrez **7 fenêtres CMD** s'ouvrir :
 1. **Serveur** - Traite les actions
 2. **Viewer** - Interface graphique (👉 REGARDEZ CETTE FENÊTRE)
-3. **Client1-VOTRE-FERME** - Votre client avec votre stratégie
+3. **mugiwara** - Votre client avec votre stratégie
 4-7. **Client2-5** - Clients factices pour démarrer le jeu
 
 ### Où voir les actions ?
@@ -58,7 +103,7 @@ Vous verrez **7 fenêtres CMD** s'ouvrir :
   ...
   ```
 
-**Dans la fenêtre "Client1-VOTRE-FERME" :**
+**Dans la fenêtre "mugiwara" :**
 - L'état de votre ferme à chaque tour
 - Les actions envoyées au serveur
 

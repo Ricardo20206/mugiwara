@@ -18,7 +18,7 @@ Start-Process cmd -ArgumentList "/k", "title Viewer && cd /d `"$PWD`" && .venv\S
 Start-Sleep -Seconds 3
 
 Write-Host "[3/7] Lancement Client 1 (VOTRE ferme)..." -ForegroundColor Yellow
-Start-Process cmd -ArgumentList "/k", "title Client1-VOTRE-FERME && cd /d `"$PWD`" && .venv\Scripts\activate.bat && python -m chronobio_client -a localhost -p $PORT -u Client1" -WindowStyle Normal
+Start-Process cmd -ArgumentList "/k", "title mugiwara && cd /d `"$PWD`" && .venv\Scripts\activate.bat && python -m chronobio_client -a localhost -p $PORT -u mugiwara" -WindowStyle Normal
 Start-Sleep -Seconds 2
 
 Write-Host "[4/7] Lancement Client 2..." -ForegroundColor Yellow
@@ -45,7 +45,7 @@ Write-Host ""
 Write-Host "7 fenetres CMD sont ouvertes:" -ForegroundColor White
 Write-Host "  1. [Serveur]            - Traite les actions" -ForegroundColor Gray
 Write-Host "  2. [Viewer]             - Interface graphique" -ForegroundColor Yellow
-Write-Host "  3. [Client1-VOTRE-FERME] - Votre strategie" -ForegroundColor Cyan
+Write-Host "  3. [mugiwara]           - Votre strategie" -ForegroundColor Cyan
 Write-Host "  4-7. [Client2-5]        - Fermes factices" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Avec 5 clients, le serveur va DEMARRER IMMEDIATEMENT!" -ForegroundColor Green
