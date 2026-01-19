@@ -109,35 +109,40 @@ class PlayerGameClient(Client):
                 self.add_command("0 ACHETER_CHAMP")
 
             elif day == 3:
-                # Semer les 3 premiers champs avec les ouvriers RÉELS
-                available = [e.get("id") for e in employees if e.get("tractor") is None]
+                # Semer les 3 premiers champs avec les ouvriers VRAIMENT disponibles
+                available = [e.get("id") for e in employees
+                           if e.get("location") == "FARM" and e.get("tractor") is None]
                 if len(available) >= 3:
                     self.add_command(f"{available[0]} SEMER PATATE 1")
                     self.add_command(f"{available[1]} SEMER TOMATE 2")
                     self.add_command(f"{available[2]} SEMER POIREAU 3")
+                    print(f"  🌱 Semis jour 3: {len(available)} ouvriers utilisés")
 
             elif day == 4:
-                # Semer les 2 derniers champs avec les ouvriers RÉELS
-                available = [e.get("id") for e in employees if e.get("tractor") is None]
+                # Semer les 2 derniers champs avec les ouvriers VRAIMENT disponibles
+                available = [e.get("id") for e in employees
+                           if e.get("location") == "FARM" and e.get("tractor") is None]
                 if len(available) >= 2:
                     self.add_command(f"{available[0]} SEMER OIGNON 4")
                     self.add_command(f"{available[1]} SEMER COURGETTE 5")
+                    print(f"  🌱 Semis jour 4: {len(available)} ouvriers utilisés")
+                else:
+                    print(f"  ⏸️ Semis jour 4 reporté: seulement {len(available)} ouvriers dispo")
 
             # PHASE 2 : Production continue (jour 5+)
             else:
-                # Obtenir les IDs des ouvriers DISPONIBLES
-                # Un ouvrier est disponible s'il n'a PAS de tracteur assigné
-                # (location peut être FARM ou FIELDX, mais sans tracteur = disponible)
+                # Obtenir les IDs des ouvriers VRAIMENT DISPONIBLES
+                # Un ouvrier est disponible s'il est à la FARM ET sans tracteur
                 available_employees = [
                     emp.get("id") for emp in employees
-                    if emp.get("tractor") is None
+                    if emp.get("location") == "FARM" and emp.get("tractor") is None
                 ]
                 used_employees = set()
 
                 # Debug: afficher les ouvriers disponibles
+                print(f"  👥 Ouvriers: {len(available_employees)} vraiment dispo (à la FARM), {len(employees) - len(available_employees)} occupés")
                 if len(available_employees) == 0 and len(employees) > 0:
-                    print(f"  ⚠️ ATTENTION: {len(employees)} ouvriers mais 0 disponible!")
-                    print(f"  Détails ouvriers: {[(e.get('id'), e.get('location'), e.get('tractor')) for e in employees]}")
+                    print("  ⚠️ TOUS les ouvriers sont occupés, on attend...")
 
                 # PRIORITÉ 1 : VENDRE directement depuis champ (si urgence ou pas de tracteur)
                 # Vendre est moins rentable que cuisiner, mais donne du cash immédiat
