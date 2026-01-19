@@ -26,6 +26,23 @@ pip install -r requirements.txt
 
 **IMPORTANT** : Le serveur Chronobio attend **5 joueurs** avant de démarrer la partie.
 
+### 🏷️ Personnaliser le nom de votre ferme
+
+Ouvrez `lancer_5clients.ps1` et modifiez la ligne 7 :
+
+```powershell
+$NOM_DE_VOTRE_FERME = "mugiwara"  # ← Changez ce nom comme vous voulez!
+```
+
+**Exemples :**
+```powershell
+$NOM_DE_VOTRE_FERME = "ma_ferme"
+$NOM_DE_VOTRE_FERME = "BioFarm2026"
+$NOM_DE_VOTRE_FERME = "LesFermiersFous"
+```
+
+C'est le **seul endroit** où vous devez changer le nom !
+
 ### Solution simple : Utiliser le script automatique
 
 ```powershell
@@ -59,6 +76,7 @@ python -m chronobio.viewer -p 16210 --width 1100 --height 700
 **4. Lancer votre client (terminal 3) :**
 ```bash
 python -m chronobio_client -a localhost -p 16210 -u mugiwara
+# Remplacez "mugiwara" par le nom que vous avez choisi
 ```
 
 **5. Lancer 4 autres clients (terminaux 4-7) :**
@@ -79,8 +97,8 @@ python -m chronobio_client -a localhost -p 16210 -u Client5
 **Notes importantes :**
 - Attendez 2-3 secondes entre chaque lancement
 - Le serveur démarre la partie **uniquement quand 5 clients** sont connectés
-- Pour changer le nom de votre ferme, modifiez le paramètre `-u mugiwara`
-- Pour changer le port, modifiez `-p 16210` (doit être identique partout)
+- Pour changer le nom : modifiez `-u mugiwara` par votre nom (voir section "Personnaliser le nom")
+- Pour changer le port : modifiez `-p 16210` (doit être identique partout)
 
 ### Résultat
 
@@ -127,56 +145,69 @@ chronobio_client/
 └── README.md
 ```
 
-## 🎯 Stratégie actuelle : AGRESSIVE & OPTIMISÉE
+## 🎯 Stratégie actuelle : OPTIMALE - Tous les Légumes + Équilibre
 
 ### Vue d'ensemble
 
-La stratégie actuelle vise la **croissance rapide** et la **domination** :
-- **Expansion massive** : 5 champs, 8 ouvriers, 3 tracteurs
-- **Production parallèle** : Tous les champs travaillés simultanément
-- **Focus POIREAU** : 43% des semailles (légume prioritaire)
-- **Cycle complet** : Semer → Arroser → Récolter → Cuisiner → Vendre
+La stratégie actuelle combine **production diversifiée** et **durabilité** :
+- **🌱 Tous les légumes** : PATATE, TOMATE, POIREAU, OIGNON, COURGETTE
+- **⚖️ Équilibre** : 4-5 champs, 5-6 ouvriers (ratio optimal 1.2)
+- **🔒 Protection solide** : Buffer 12 jours de salaires
+- **📈 Croissance contrôlée** : Expansion basée sur rentabilité
+- **🔄 Rotation intelligente** : Sème ce qui manque le plus
 
-### Phase 1 : Démarrage agressif (Jours 0-5)
+### Phase 1 : Démarrage ÉQUILIBRÉ (Jours 0-2)
 
 ```
-Jour 0: EMPRUNTER 100k → ACHETER_CHAMP x3
-Jour 1: EMPLOYER x3 → ACHETER_TRACTEUR
-Jour 2: SEMER (PATATE, TOMATE, OIGNON) sur 3 champs
-Jour 3: ACHETER_CHAMP x2 → Total 5 champs!
-Jour 4: EMPLOYER x2 → Total 5 ouvriers!
-Jour 5: SEMER (POIREAU, COURGETTE) sur les nouveaux champs
+Jour 0: EMPRUNTER 50k + ACHETER 4 champs (diversification)
+Jour 1: EMPLOYER x5 + TRACTEUR (bon ratio ouvriers/champs)
+Jour 2: SEMER 4 légumes différents (PATATE, TOMATE, POIREAU, OIGNON)
 ```
 
-### Phase 2 : Production continue (Jour 6+)
+**Avantages :**
+- Capital modéré pour démarrer (50k emprunt, pas 100k)
+- 5 ouvriers pour 4 champs = ratio 1.25 (efficace)
+- Diversification dès le départ
+- Production de toutes les variétés de soupes
 
-**Priorités d'actions (dans l'ordre) :**
+### Phase 2 : Production DIVERSIFIÉE (Jour 3+)
 
-1. **RÉCOLTER** (STOCKER) les légumes mûrs
-   - Condition : `needed_water == 0` et `content != "NONE"`
-   - Nécessite un tracteur
+**Priorités d'actions (équilibre production/sécurité) :**
 
-2. **VENDRE** les soupes
-   - Condition : Stock >= 15 légumes
-   - Génère des revenus importants
+1. **REMBOURSER les dettes** (priorité haute)
+   - Rembourser dès que argent > buffer + 80k
+   - Réduire les intérêts rapidement
 
-3. **CUISINER** des soupes
-   - Condition : Stock >= 5 légumes
-   - Augmente la valeur des légumes
+2. **RÉCOLTER TOUS les légumes mûrs** (production maximale)
+   - Récolte parallèle de tous les champs prêts
+   - Génère stock pour soupes
 
-4. **ARROSER** tous les champs
-   - Condition : `needed_water > 0`
-   - Tous les champs arrosés en parallèle
+3. **VENDRE selon situation** (cash flow adaptatif)
+   - 🔴 Urgence (< buffer/2) : Vendre dès 5 légumes
+   - 🟡 Attention (< buffer*0.8) : Vendre dès 6 légumes
+   - 🟢 Normal : Vendre dès 7-8 légumes
 
-5. **SEMER** sur tous les champs vides
-   - Rotation : POIREAU (43%), PATATE, TOMATE, OIGNON, COURGETTE
-   - Tous les champs semés en parallèle
+4. **CUISINER intelligemment** (transformation optimale)
+   - Adapté selon situation financière (3-5 légumes)
+   - Production continue de soupes
 
-6. **EXPANSION**
-   - Embaucher si argent > 70k (max 8 ouvriers)
-   - Acheter champs si argent > 80k (max 5)
-   - Acheter tracteurs si argent > 90k (max 3)
-   - Emprunter 50k si argent < 50k (tous les 20 jours)
+5. **ARROSER TOUS les champs** (priorité intelligente)
+   - Tri par urgence : champs les plus proches de maturation d'abord
+   - Arrosage parallèle de tous
+
+6. **SEMER TOUS LES LÉGUMES** (diversification maximale!)
+   - 🌱 Rotation de TOUS les légumes : PATATE, TOMATE, POIREAU, OIGNON, COURGETTE
+   - Analyse en temps réel : sème ce qui manque le plus
+   - Équilibrage automatique du stock
+   - Affichage priorité tous les 10 jours
+
+7. **EXPANSION ÉQUILIBRÉE** (croissance contrôlée)
+   - Maximum 6 ouvriers, 5 champs
+   - Ratio cible : 1.2 ouvriers par champ
+   - Embaucher si argent > buffer + 100k
+   - Acheter champs si argent > buffer + 120k
+   - Tracteurs supplémentaires si argent > buffer + 150k
+   - **Buffer = 12 jours de salaires**
 
 ### Modifier la stratégie
 
@@ -247,21 +278,34 @@ self.add_command(f"{emp_id} VENDRE")
 - Si problème persiste : `Stop-Process -Name python -Force` puis relancez
 
 ### Les fermes se bloquent rapidement
-**Causes possibles :**
-- Trop d'ouvriers = salaires trop élevés
-- Pas assez de récoltes = pas de revenus
-- Emprunts trop nombreux = intérêts élevés
 
-**Solutions :**
-```python
-# Dans client.py, réduire les seuils d'expansion :
+**Pourquoi une ferme se bloque :**
+Une ferme se bloque quand elle n'a **plus assez d'argent pour payer les salaires** à la fin du jour. Les salaires augmentent avec le temps, donc plus vous avez d'ouvriers, plus le risque est élevé.
 
-# Au lieu de :
-if money > 70000 and num_employees < 8:
+**La stratégie actuelle inclut une PROTECTION ANTI-BLOCAGE :**
 
-# Mettre :
-if money > 100000 and num_employees < 5:
-```
+1. **Buffer de sécurité automatique**
+   - Calcule 10 jours de salaires en réserve
+   - N'embauche/achète que si `argent > buffer + seuil`
+
+2. **Alerte argent critique**
+   - Affiche `⚠️ ALERTE` quand il reste moins de 5 jours de salaires
+   - Exemple : `⚠️ ALERTE: Argent critique! Seulement 3 jours de salaires restants`
+
+3. **Mode survie automatique**
+   - Vend dès 5 légumes (au lieu de 8) si argent < buffer
+   - Cuisine dès 3 légumes (au lieu de 4) si argent < buffer
+   - Génère des revenus plus rapidement en situation critique
+
+4. **Embauche limitée**
+   - Maximum 4 ouvriers (au lieu de 6-8)
+   - Seuils élevés : 120 000 EUR + buffer de sécurité
+   - Empêche l'accumulation de salaires trop élevés
+
+**Si votre ferme se bloque malgré tout :**
+- La partie est perdue pour cette ferme
+- Relancez une nouvelle partie
+- La stratégie actuelle devrait éviter ce problème
 
 ### Score n'augmente pas assez vite
 **Optimisations possibles :**
@@ -281,16 +325,46 @@ if money > 100000 and num_employees < 5:
 
 ### Performances et résultats
 
-**Stratégie AGRESSIVE actuelle :**
-- ✅ Démarrage rapide (5 champs, 5 ouvriers en 5 jours)
-- ✅ Production massive (tous champs travaillés en parallèle)
-- ✅ Score croissant (ventes de soupes régulières)
-- ⚠️ Risqué (emprunt initial, salaires élevés)
+**Stratégie OPTIMALE (équilibre production/durabilité) :**
+- 🌱 **Diversification** : TOUS les 5 légumes en rotation
+- ⚖️ **Équilibre** : 4-5 champs, 5-6 ouvriers (ratio 1.2)
+- 🔒 **Protection solide** : Buffer 12 jours (sécurité + croissance)
+- 📈 **Expansion intelligente** : Basée sur ratio et rentabilité
+- 💰 **Vente adaptative** : 5-8 légumes selon situation
 
-**Si vous voulez plus de stabilité :**
-- Augmentez les seuils d'argent (100k au lieu de 70k)
-- Réduisez le nombre max d'ouvriers (5 au lieu de 8)
-- Supprimez l'emprunt initial du jour 0
+**Caractéristiques :**
+- ✅ **Production diversifiée** : Tous les types de soupes possibles
+- ✅ **Rotation intelligente** : Sème automatiquement ce qui manque
+- ✅ **Récolte parallèle** : Tous les champs en même temps
+- ✅ **Croissance contrôlée** : Maximum 6 ouvriers (évite explosion salaires)
+- ✅ **Affichage stocks** : Monitoring des 5 légumes tous les 20 jours
+
+**Comparaison stratégies :**
+
+| Stratégie | Production | Diversité | Durabilité | Score |
+|-----------|------------|-----------|------------|-------|
+| **Minimaliste** (2-3 ouvriers) | 📉 Faible | 🟡 Limitée | ✅ Excellente | Bas |
+| **OPTIMALE** (5-6 ouvriers) | 📈 Élevée | ✅ Maximale | ✅ Très bonne | **Élevé** |
+| **Aggressive** (8+ ouvriers) | 🚀 Maximale | ✅ Maximale | ❌ Risqué | Très élevé puis crash |
+
+**Résultats attendus :**
+- 🎯 **Score élevé ET stable** : Production massive + durabilité
+- 🌱 **5 types de légumes** : Diversification maximale
+- 🔒 **Blocage rare** : Seulement si salaires explosent (jour 500+)
+- 📊 **Performance** : Meilleur équilibre score/durabilité
+- 🏆 **Objectif** : Dominer puis survivre
+
+**Affichages utiles :**
+```
+🌱 Stock: P:12 T:8 Po:15 O:10 C:5  ← Tous les légumes
+🌱 Priorité semis: COURGETTE > TOMATE > OIGNON  ← Rotation auto
+🟠 Attention: 18 jours de salaires  ← Alertes graduées
+```
+
+**Personnalisation :**
+- Plus conservateur : `safety_buffer = total_salaries * 15`
+- Plus agressif : `MAX_EMPLOYEES = 7` (attention salaires!)
+- Focus légume : Modifier priorité dans code semis
 
 ## 🧪 Tests
 
