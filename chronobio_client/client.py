@@ -130,22 +130,29 @@ class PlayerGameClient(Client):
                     self.add_command(f"{available[0]} SEMER POIREAU 3")
                     print("  🌱 Semis jour 5: champ 3")
 
-            # PHASE 2 : Production PRUDENTE (jour 6+)
+            # PHASE 2 : Production HYBRIDE (jour 6+)
             else:
-                # Obtenir SEULEMENT les ouvriers vraiment disponibles (à la FARM)
-                # STRATÉGIE PRUDENTE: On utilise seulement ceux qui sont sûrs d'être libres
-                available_employees = [
+                # STRATÉGIE HYBRIDE :
+                # - Pour SEMER : Seulement ouvriers à FARM (prudent)
+                # - Pour ARROSER/RÉCOLTER : Tous sans tracteur (agressif)
+
+                employees_at_farm = [
                     emp.get("id") for emp in employees
                     if emp.get("location") == "FARM" and emp.get("tractor") is None
                 ]
+
+                all_available = [
+                    emp.get("id") for emp in employees
+                    if emp.get("tractor") is None
+                ]
+
                 used_employees = set()
 
                 # Debug: afficher les ouvriers
                 total = len(employees)
-                at_farm = len(available_employees)
-                print(f"  👥 Ouvriers: {at_farm} à la FARM (dispo), {total - at_farm} occupés")
-                if at_farm == 0 and total > 0:
-                    print("  ⏸️ Attente: tous les ouvriers sont occupés")
+                at_farm = len(employees_at_farm)
+                all_free = len(all_available)
+                print(f"  👥 Ouvriers: {at_farm} à FARM, {all_free} sans tracteur (total: {total})")
 
                 # PRIORITÉ 1 : VENDRE directement depuis champ (si urgence ou pas de tracteur)
                 # Vendre est moins rentable que cuisiner, mais donne du cash immédiat
@@ -165,8 +172,8 @@ class PlayerGameClient(Client):
                                 self.add_command(f"0 VENDRE {field_num}")
                                 break  # Une seule vente par tour (gérant occupé 2 jours)
 
-                # PRIORITÉ 2 : RÉCOLTER TOUS les légumes mûrs (production maximale!)
-                if num_tractors > 0 and available_employees:
+                # PRIORITÉ 2 : RÉCOLTER TOUS les légumes mûrs (utilise tous les ouvriers!)
+                if num_tractors > 0 and all_available:
                     recoltes = 0
                     for field in owned_fields:
                         content = field.get("content", "NONE")
@@ -175,8 +182,8 @@ class PlayerGameClient(Client):
                             location = field.get("location", "")
                             if location.startswith("FIELD"):
                                 field_num = location.replace("FIELD", "")
-                                # Trouver un ouvrier disponible
-                                for emp_id in available_employees:
+                                # Trouver un ouvrier disponible (tous sans tracteur)
+                                for emp_id in all_available:
                                     if emp_id not in used_employees:
                                         self.add_command(f"{emp_id} STOCKER {field_num} 1")
                                         used_employees.add(emp_id)
@@ -200,13 +207,13 @@ class PlayerGameClient(Client):
                 # Seuil ULTRA-BAS : cuisiner dès 50 légumes!
                 min_stock_to_cook = 50
 
-                # Utiliser TOUS les ouvriers disponibles pour cuisiner
-                max_cooks = min(5, len([e for e in available_employees if e not in used_employees]))
+                # Utiliser TOUS les ouvriers sans tracteur pour cuisiner
+                max_cooks = min(5, len([e for e in all_available if e not in used_employees]))
 
                 # PRIORITÉ 4 : CUISINER avec PLUSIEURS ouvriers (revenus x3!)
-                if soups_ready and total_stock >= min_stock_to_cook and available_employees:
+                if soups_ready and total_stock >= min_stock_to_cook and all_available:
                     cooks_assigned = 0
-                    for emp_id in available_employees:
+                    for emp_id in all_available:
                         if emp_id not in used_employees and cooks_assigned < max_cooks:
                             self.add_command(f"{emp_id} CUISINER")
                             used_employees.add(emp_id)
@@ -218,7 +225,7 @@ class PlayerGameClient(Client):
                 elif total_stock >= min_stock_to_cook:
                     if not soups_ready:
                         print("  ⏸️  Cuisine impossible: usine occupée")
-                    elif not available_employees:
+                    elif not all_available:
                         print("  ⏸️  Cuisine impossible: tous ouvriers occupés")
                 elif total_stock > 0:
                     missing_vegs = [v for v in ["POTATO", "LEEK", "TOMATO", "ONION", "ZUCCHINI"] if stock.get(v, 0) < min_each_veg]
@@ -227,8 +234,8 @@ class PlayerGameClient(Client):
                     else:
                         print(f"  ⏸️  Accumulation: {total_stock}/{min_stock_to_cook} légumes")
 
-                # PRIORITÉ 5 : ARROSER TOUS les champs en parallèle (croissance rapide!)
-                if available_employees:
+                # PRIORITÉ 5 : ARROSER TOUS les champs (utilise tous les ouvriers!)
+                if all_available:
                     # Trier les champs par urgence : ceux qui ont le moins d'eau restante
                     fields_to_water = []
                     for field in owned_fields:
@@ -245,8 +252,8 @@ class PlayerGameClient(Client):
 
                     arrosages = 0
                     for _needed, field_num in fields_to_water:
-                        # Assigner un ouvrier à chaque champ
-                        for emp_id in available_employees:
+                        # Assigner un ouvrier à chaque champ (tous disponibles)
+                        for emp_id in all_available:
                             if emp_id not in used_employees:
                                 self.add_command(f"{emp_id} ARROSER {field_num}")
                                 used_employees.add(emp_id)
@@ -256,8 +263,8 @@ class PlayerGameClient(Client):
                     if arrosages > 0:
                         print(f"  💧 ARROSER : {arrosages} champ(s)")
 
-                # PRIORITÉ 8 : SEMER TOUS les légumes (diversification maximale!)
-                if available_employees:
+                # PRIORITÉ 8 : SEMER (seulement ouvriers à FARM, prudent!)
+                if employees_at_farm:
                     # Compter TOUS les légumes (stock + en croissance)
                     all_vegetables = {
                         "PATATE": stock.get("POTATO", 0),
@@ -294,7 +301,7 @@ class PlayerGameClient(Client):
                             location = field.get("location", "")
                             if location.startswith("FIELD"):
                                 field_num = location.replace("FIELD", "")
-                                for emp_id in available_employees:
+                                for emp_id in employees_at_farm:
                                     if emp_id not in used_employees:
                                         # Semer le légume le plus rare
                                         veg = priority_list[veg_idx % len(priority_list)]
