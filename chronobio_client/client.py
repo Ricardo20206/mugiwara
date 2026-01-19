@@ -109,15 +109,19 @@ class PlayerGameClient(Client):
                 self.add_command("0 ACHETER_CHAMP")
 
             elif day == 3:
-                # Semer les 3 premiers champs (diversification)
-                self.add_command("1 SEMER PATATE 1")
-                self.add_command("2 SEMER TOMATE 2")
-                self.add_command("3 SEMER POIREAU 3")
+                # Semer les 3 premiers champs avec les ouvriers RÉELS
+                available = [e.get("id") for e in employees if e.get("tractor") is None]
+                if len(available) >= 3:
+                    self.add_command(f"{available[0]} SEMER PATATE 1")
+                    self.add_command(f"{available[1]} SEMER TOMATE 2")
+                    self.add_command(f"{available[2]} SEMER POIREAU 3")
 
             elif day == 4:
-                # Semer les 2 derniers champs
-                self.add_command("1 SEMER OIGNON 4")
-                self.add_command("2 SEMER COURGETTE 5")
+                # Semer les 2 derniers champs avec les ouvriers RÉELS
+                available = [e.get("id") for e in employees if e.get("tractor") is None]
+                if len(available) >= 2:
+                    self.add_command(f"{available[0]} SEMER OIGNON 4")
+                    self.add_command(f"{available[1]} SEMER COURGETTE 5")
 
             # PHASE 2 : Production continue (jour 5+)
             else:
