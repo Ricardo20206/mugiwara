@@ -29,8 +29,8 @@ def main() -> None:
         "-u",
         "--username",
         type=str,
-        required=True,
-        help="Nom d'utilisateur du client",
+        default="mugiwara",
+        help="Nom d'utilisateur du client (défaut: mugiwara)",
     )
 
     args = parser.parse_args()

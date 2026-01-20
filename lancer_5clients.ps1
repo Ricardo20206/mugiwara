@@ -4,8 +4,8 @@
 # ============================================
 # 🎮 CONFIGURATION - MODIFIEZ ICI
 # ============================================
-$NOM_DE_VOTRE_FERME = "mugiwara"  # ← Changez ce nom comme vous voulez!
 $PORT = 16210
+# Nom par defaut: "mugiwara" (configure dans chronobio_client/__main__.py)
 # ============================================
 
 Write-Host "========================================" -ForegroundColor Cyan
@@ -22,8 +22,8 @@ Write-Host "[2/7] Lancement du viewer..." -ForegroundColor Yellow
 Start-Process cmd -ArgumentList "/k", "title Viewer && cd /d `"$PWD`" && .venv\Scripts\activate.bat && python -m chronobio.viewer -p $PORT --width 1100 --height 700" -WindowStyle Normal
 Start-Sleep -Seconds 3
 
-Write-Host "[3/7] Lancement Client 1 (VOTRE ferme: $NOM_DE_VOTRE_FERME)..." -ForegroundColor Yellow
-Start-Process cmd -ArgumentList "/k", "title $NOM_DE_VOTRE_FERME && cd /d `"$PWD`" && .venv\Scripts\activate.bat && python -m chronobio_client -a localhost -p $PORT -u $NOM_DE_VOTRE_FERME" -WindowStyle Normal
+Write-Host "[3/7] Lancement Client 1 (VOTRE ferme: mugiwara - par defaut)..." -ForegroundColor Yellow
+Start-Process cmd -ArgumentList "/k", "title mugiwara && cd /d `"$PWD`" && .venv\Scripts\activate.bat && python -m chronobio_client -p $PORT" -WindowStyle Normal
 Start-Sleep -Seconds 2
 
 Write-Host "[4/7] Lancement Client 2..." -ForegroundColor Yellow
@@ -50,7 +50,7 @@ Write-Host ""
 Write-Host "7 fenetres CMD sont ouvertes:" -ForegroundColor White
 Write-Host "  1. [Serveur]            - Traite les actions" -ForegroundColor Gray
 Write-Host "  2. [Viewer]             - Interface graphique" -ForegroundColor Yellow
-Write-Host "  3. [$NOM_DE_VOTRE_FERME]           - Votre strategie" -ForegroundColor Cyan
+Write-Host "  3. [mugiwara]           - Votre strategie" -ForegroundColor Cyan
 Write-Host "  4-7. [Client2-5]        - Fermes factices" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Avec 5 clients, le serveur va DEMARRER IMMEDIATEMENT!" -ForegroundColor Green

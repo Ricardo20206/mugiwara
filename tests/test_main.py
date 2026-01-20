@@ -57,11 +57,20 @@ class TestMainArgparse:
         with patch.object(sys, 'argv', test_args), pytest.raises(SystemExit):
             main()
 
-    def test_main_missing_username(self):
-        """Test sans le username (argument requis)."""
+    @patch('chronobio_client.__main__.PlayerGameClient')
+    def test_main_default_username(self, mock_client):
+        """Test que le username par défaut est 'mugiwara'."""
+        mock_instance = Mock()
+        mock_client.return_value = mock_instance
+        mock_instance.run.side_effect = KeyboardInterrupt  # Arrêt immédiat
+        
         test_args = ['prog', '-p', '12345']
-        with patch.object(sys, 'argv', test_args), pytest.raises(SystemExit):
+        with patch.object(sys, 'argv', test_args), pytest.raises(SystemExit) as exc_info:
             main()
+        
+        # Vérifier que le client a été créé avec 'mugiwara' comme username
+        mock_client.assert_called_once_with('localhost', 12345, 'mugiwara')
+        assert exc_info.value.code == 0
 
     @patch('chronobio_client.__main__.PlayerGameClient')
     def test_main_keyboard_interrupt(self, mock_client):
