@@ -33,7 +33,7 @@ class TestStrategy:
         assert self.strategy.turn_count == 2
 
     def test_day_1_actions(self):
-        """Test des actions au jour 1: acheter 3 champs (PROGRESSIVE RÉALISTE)."""
+        """Test des actions au jour 1: 3 champs + 1 tracteur + 0 ouvrier."""
         farm_data = {
             "money": 100000,
             "employees": [],
@@ -45,21 +45,23 @@ class TestStrategy:
 
         actions = self.strategy.get_actions(farm_data)
 
-        # Stratégie PROGRESSIVE: 3 champs dès jour 0, garde 70k capital
-        assert len(actions) == 3
+        # Stratégie RADICALE: 3 champs + 1 tracteur + 0 ouvrier
+        assert len(actions) == 4
+        assert sum(1 for a in actions if "EMPRUNTER" in a) == 0
         assert sum(1 for a in actions if "ACHETER_CHAMP" in a) == 3
-        assert not any("EMPRUNTER" in a for a in actions)
+        assert sum(1 for a in actions if "ACHETER_TRACTEUR" in a) == 1
+        assert sum(1 for a in actions if "EMPLOYER" in a) == 0
 
     def test_day_2_actions(self):
-        """Test des actions au jour 2: 2 ouvriers + 1 tracteur (PROGRESSIVE)."""
+        """Test des actions au jour 2: RIEN (production uniquement)."""
         farm_data = {
-            "money": 70000,  # Argent après achat de 3 champs (100k - 30k)
-            "employees": [],
+            "money": 40000,  # Argent après investissement (100k - 60k)
+            "employees": [],  # 0 ouvrier!
             "fields": [
                 {"bought": True, "content": "NONE", "location": f"FIELD{i}"}
                 for i in range(1, 4)
             ],
-            "tractors": [],
+            "tractors": [{"id": 1}],
             "loans": [],
             "soup_factory": {"stock": {}, "days_off": 0}
         }
@@ -67,10 +69,9 @@ class TestStrategy:
         self.strategy.turn_count = 1  # Simuler jour 2
         actions = self.strategy.get_actions(farm_data)
 
-        # Stratégie PROGRESSIVE: 2 ouvriers + 1 tracteur (production immédiate!)
-        assert len(actions) == 3
-        assert sum(1 for a in actions if "EMPLOYER" in a) == 2
-        assert sum(1 for a in actions if "ACHETER_TRACTEUR" in a) == 1
+        # Stratégie RADICALE: RIEN au jour 2 (juste production)
+        expansion_actions = [a for a in actions if "EMPLOYER" in a or "ACHETER" in a or "EMPRUNTER" in a]
+        assert len(expansion_actions) == 0
 
     def test_harvest_fields(self):
         """Test de la récolte des champs."""
@@ -89,10 +90,10 @@ class TestStrategy:
             "soup_factory": {"stock": {}, "days_off": 0}
         }
 
-        self.strategy.turn_count = 10  # Après le démarrage
+        self.strategy.turn_count = 10
         actions = self.strategy.get_actions(farm_data)
 
-        # Devrait récolter le champ
+        # Devrait récolter le champ (STOCKER)
         harvest_actions = [a for a in actions if "STOCKER" in a]
         assert len(harvest_actions) >= 1
         assert "1 STOCKER 1 1" in harvest_actions[0]
@@ -173,8 +174,8 @@ class TestStrategy:
         # Devrait cuisiner avec plusieurs ouvriers
         cook_actions = [a for a in actions if "CUISINER" in a]
         assert len(cook_actions) >= 1
-        # Devrait utiliser plusieurs ouvriers
-        assert len(cook_actions) <= 3
+        # Devrait utiliser max 4 ouvriers
+        assert len(cook_actions) <= 4
 
     def test_cook_soups_without_diversity(self):
         """Test que la diversité est requise (PRODUCTION SOUPE - 3 par légume)."""
@@ -230,7 +231,7 @@ class TestStrategy:
         assert len(cook_actions) == 0
 
     def test_no_cook_when_insufficient_stock(self):
-        """Test qu'on ne cuisine pas avec un stock insuffisant (<15)."""
+        """Test qu'on ne cuisine pas avec un stock insuffisant (<20)."""
         farm_data = {
             "money": 100000,
             "employees": [
@@ -240,7 +241,7 @@ class TestStrategy:
             "tractors": [],
             "loans": [],
             "soup_factory": {
-                "stock": {"POTATO": 10},  # < 15 minimum (stratégie PROGRESSIVE)
+                "stock": {"POTATO": 10},  # < 20 minimum (stratégie STABLE)
                 "days_off": 0
             }
         }
@@ -248,7 +249,7 @@ class TestStrategy:
         self.strategy.turn_count = 10
         actions = self.strategy.get_actions(farm_data)
 
-        # Ne devrait pas cuisiner car stock < 15
+        # Ne devrait pas cuisiner car stock < 20
         cook_actions = [a for a in actions if "CUISINER" in a]
         assert len(cook_actions) == 0
 
@@ -350,10 +351,10 @@ class TestStrategyPhases:
     """Tests pour les différentes phases de la stratégie."""
 
     def test_phase_1_expansion(self):
-        """Test de la phase 1: expansion initiale PROGRESSIVE RÉALISTE."""
+        """Test de la phase 1: RADICALE - 3 champs + tracteur + 0 ouvrier."""
         strategy = Strategy()
 
-        # Jour 1: 3 champs (capital préservé!), SANS emprunt
+        # Jour 1: 3 champs + tracteur + 0 ouvrier
         farm_data_day1 = {
             "money": 100000,
             "employees": [],
@@ -363,25 +364,27 @@ class TestStrategyPhases:
             "soup_factory": {"stock": {}, "days_off": 0}
         }
         actions_day1 = strategy.get_actions(farm_data_day1)
-        # Stratégie PROGRESSIVE: 3 champs, garde 70k EUR
-        assert len([a for a in actions_day1 if "ACHETER_CHAMP" in a]) == 3
+        # Stratégie RADICALE: 3 champs + tracteur + 0 ouvrier (40k EUR restants!)
         assert len([a for a in actions_day1 if "EMPRUNTER" in a]) == 0
+        assert len([a for a in actions_day1 if "ACHETER_CHAMP" in a]) == 3
+        assert len([a for a in actions_day1 if "ACHETER_TRACTEUR" in a]) == 1
+        assert len([a for a in actions_day1 if "EMPLOYER" in a]) == 0
 
-        # Jour 2: 2 ouvriers + 1 tracteur (production immédiate!)
+        # Jour 2: RIEN (juste production!)
         farm_data_day2 = {
-            "money": 70000,
-            "employees": [],
+            "money": 40000,
+            "employees": [],  # 0 ouvrier
             "fields": [
                 {"bought": True, "content": "NONE", "location": f"FIELD{i}"}
                 for i in range(1, 4)
             ],
-            "tractors": [],
+            "tractors": [{"id": 1}],
             "loans": [],
             "soup_factory": {"stock": {}, "days_off": 0}
         }
         actions_day2 = strategy.get_actions(farm_data_day2)
-        assert len([a for a in actions_day2 if "EMPLOYER" in a]) == 2
-        assert len([a for a in actions_day2 if "ACHETER_TRACTEUR" in a]) == 1
+        expansion_actions = [a for a in actions_day2 if "EMPLOYER" in a or "ACHETER" in a or "EMPRUNTER" in a]
+        assert len(expansion_actions) == 0
 
     def test_phase_2_production(self):
         """Test de la phase 2: production."""
