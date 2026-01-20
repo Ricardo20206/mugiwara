@@ -271,10 +271,10 @@ class Strategy:
 
         empty_fields = [f for f in fields if f.get("content") in ["NONE", None]]
 
+        # Permettre à TOUS les ouvriers disponibles de semer (pas seulement ceux à FARM)
         available_employees = [
             emp for emp in employees
             if emp.get("id") not in used_employees
-            and emp.get("location") == "FARM"
             and emp.get("tractor") is None
         ]
 
