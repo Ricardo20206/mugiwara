@@ -63,11 +63,11 @@ class TestMainArgparse:
         mock_instance = Mock()
         mock_client.return_value = mock_instance
         mock_instance.run.side_effect = KeyboardInterrupt  # Arrêt immédiat
-        
+
         test_args = ['prog', '-p', '12345']
         with patch.object(sys, 'argv', test_args), pytest.raises(SystemExit) as exc_info:
             main()
-        
+
         # Vérifier que le client a été créé avec 'mugiwara' comme username
         mock_client.assert_called_once_with('localhost', 12345, 'mugiwara')
         assert exc_info.value.code == 0

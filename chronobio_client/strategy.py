@@ -1,4 +1,4 @@
-"""Stratégie de jeu ÉQUILIBRÉE OPTIMISÉE - Production Maximale Stable."""
+"""Stratégie de jeu PROGRESSIVE RÉALISTE - Production Garantie."""
 
 from typing import Any
 
@@ -10,17 +10,17 @@ FIELD_COST = 10000
 TRACTOR_COST = 30000
 EMPLOYEE_BASE_SALARY = 1000
 
-# Configuration OPTIMISÉE PRODUCTION
-MAX_EMPLOYEES = 8       # Équilibré pour production soutenue
+# Configuration PROGRESSIVE RÉALISTE
+MAX_EMPLOYEES = 10      # Objectif à long terme
 MAX_TRACTORS = 3
 MAX_FIELDS = 5
-MIN_STOCK_TO_COOK = 20  # Cuisine dès 20 légumes
+MIN_STOCK_TO_COOK = 15  # Cuisine dès 15 légumes
 MIN_DIVERSITY = 3       # Flexible
-MAX_COOKS = 4           # 4 cuisiniers en parallèle
+MAX_COOKS = 5           # 5 cuisiniers en parallèle
 
 
 class Strategy:
-    """Stratégie OPTIMISÉE PRODUCTION SOUPE - Production massive de soupes."""
+    """Stratégie PROGRESSIVE RÉALISTE - Production garantie avec expansion contrôlée."""
 
     def __init__(self) -> None:
         """Initialise la stratégie."""
@@ -31,19 +31,19 @@ class Strategy:
         """
         Génère les actions pour ce tour.
 
-        Stratégie PRODUCTION OPTIMISÉE - Équilibre croissance/stabilité:
-        - Jour 0: ACHETER 5 CHAMPS (50k, reste 50k) - COURGETTES priorisées!
-        - Jour 1: EMPLOYER 3 OUVRIERS (démarrage rapide)
-        - Jour 3: ACHETER 1 TRACTEUR
-        - Jour 5: EMPLOYER 2 OUVRIERS (total: 5)
-        - Jour 10: ACHETER 1 TRACTEUR (total: 2)
-        - Jour 15: EMPLOYER 1 OUVRIER (total: 6)
-        - Jour 20: ACHETER 1 TRACTEUR (total: 3, complet!)
-        - Jour 25+: Expansion continue jusqu'à 8 ouvriers
-        - Buffer fixe: 20 jours (équilibre sécurité/croissance)
-        - Cuisine: seuil 20 légumes, diversité 3, jusqu'à 4 cuisiniers
+        Stratégie PROGRESSIVE RÉALISTE - Garantir la production:
+        - Jour 0: 3 CHAMPS (reste 70k EUR - capital de démarrage suffisant!)
+        - Jour 1: 2 OUVRIERS + 1 TRACTEUR (production immédiate!)
+        - Jour 3: 1 OUVRIER (total: 3)
+        - Jour 5: 1 CHAMP (total: 4)
+        - Jour 8: 1 OUVRIER (total: 4)
+        - Jour 12: 1 TRACTEUR (total: 2)
+        - Jour 16: 1 CHAMP (total: 5, complet!)
+        - Jour 20+: 1 OUVRIER tous les 5 jours jusqu'à 10
+        - Jour 25: 1 TRACTEUR (total: 3, complet!)
+        - Buffer adaptatif: 5 jours (début) → 10 jours (établi) → 15 jours (mature)
+        - Cuisine: seuil 15 légumes, diversité 3, jusqu'à 5 cuisiniers
         - Rotation: COURGETTE prioritaire, tous les légumes équilibrés
-        - Conditions simplifiées pour garantir la production
         """
         self.turn_count += 1
         actions: list[str] = []
@@ -58,51 +58,65 @@ class Strategy:
 
         # Métriques
         total_salaries = sum(emp.get("salary", 0) for emp in employees)
-        # Buffer simplifié: 20 jours fixe
-        safety_buffer = total_salaries * 20
         num_employees = len(employees)
         num_tractors = len(tractors)
+        num_fields = len(fields)
+
+        # Buffer adaptatif: croît avec la maturité de la ferme
+        if self.turn_count <= 10:
+            buffer_days = 5  # Début: très agressif
+        elif self.turn_count <= 50:
+            buffer_days = 10  # Établissement: modéré
+        else:
+            buffer_days = 15  # Mature: prudent
+
+        safety_buffer = total_salaries * buffer_days
 
         # Tracker
         used_employees: set[int] = set()
         used_tractors: set[int] = set()
 
-        # === EXPANSION SIMPLIFIÉE ET EFFICACE ===
+        # === EXPANSION PROGRESSIVE ET RÉALISTE ===
 
-        # Jour 0: 5 champs TOUS
+        # Jour 0: 3 champs (garde 70k EUR!)
         if self.turn_count == 1:
-            for _ in range(5):
+            for _ in range(3):
                 actions.append("0 ACHETER_CHAMP")
 
-        # Jour 1: 3 ouvriers immédiatement
+        # Jour 1: 2 ouvriers + 1 TRACTEUR (CRITIQUE pour récolter!)
         elif self.turn_count == 2:
-            for _ in range(3):
-                actions.append("0 EMPLOYER")
-
-        # Jour 3: 1 tracteur
-        elif self.turn_count == 4 and num_tractors < 1 and money > safety_buffer + 30000:
-            actions.append("0 ACHETER_TRACTEUR")
-
-        # Jour 5: 2 ouvriers (total: 5)
-        elif self.turn_count == 6 and num_employees < 5 and money > safety_buffer + 20000:
             for _ in range(2):
                 actions.append("0 EMPLOYER")
+            if num_tractors < 1:
+                actions.append("0 ACHETER_TRACTEUR")
 
-        # Jour 10: 1 tracteur (total: 2)
-        elif self.turn_count == 11 and num_tractors < 2 and money > safety_buffer + 30000:
-            actions.append("0 ACHETER_TRACTEUR")
-
-        # Jour 15: 1 ouvrier (total: 6)
-        elif self.turn_count == 16 and num_employees < 6 and money > safety_buffer + 25000:
+        # Jour 3: 1 ouvrier (total: 3)
+        elif self.turn_count == 4 and num_employees < 3 and money > safety_buffer + 5000:
             actions.append("0 EMPLOYER")
 
-        # Jour 20: 1 tracteur (total: 3, complet!)
-        elif self.turn_count == 21 and num_tractors < 3 and money > safety_buffer + 30000:
+        # Jour 5: 1 champ (total: 4)
+        elif self.turn_count == 6 and num_fields < 4 and money > safety_buffer + 10000:
+            actions.append("0 ACHETER_CHAMP")
+
+        # Jour 8: 1 ouvrier (total: 4)
+        elif self.turn_count == 9 and num_employees < 4 and money > safety_buffer + 5000:
+            actions.append("0 EMPLOYER")
+
+        # Jour 12: 1 tracteur (total: 2)
+        elif self.turn_count == 13 and num_tractors < 2 and money > safety_buffer + 30000:
             actions.append("0 ACHETER_TRACTEUR")
 
-        # Jour 25+: Expansion continue jusqu'à 8 ouvriers
-        elif self.turn_count > 25 and num_employees < MAX_EMPLOYEES and money > safety_buffer + 50000:
+        # Jour 16: 1 champ (total: 5, complet!)
+        elif self.turn_count == 17 and num_fields < 5 and money > safety_buffer + 10000:
+            actions.append("0 ACHETER_CHAMP")
+
+        # Jour 20+: 1 ouvrier tous les 5 jours jusqu'à 10
+        elif self.turn_count >= 21 and self.turn_count % 5 == 1 and num_employees < MAX_EMPLOYEES and money > safety_buffer + 10000:
             actions.append("0 EMPLOYER")
+
+        # Jour 25: 1 tracteur (total: 3, complet!)
+        elif self.turn_count == 26 and num_tractors < 3 and money > safety_buffer + 30000:
+            actions.append("0 ACHETER_TRACTEUR")
 
         # === PRODUCTION: RÉCOLTER, CUISINER, ARROSER, SEMER ===
         harvest_actions = self._harvest_fields(fields, employees, tractors, used_employees, used_tractors)
@@ -200,7 +214,7 @@ class Strategy:
             if emp.get("id") not in used_employees and emp.get("tractor") is None
         ]
 
-        # Utiliser jusqu'à 5 cuisiniers (production élevée sans surcharge)
+        # Utiliser jusqu'à MAX_COOKS cuisiniers (production élevée sans surcharge)
         cooks_count = min(MAX_COOKS, len(available_employees))
 
         for i in range(cooks_count):
