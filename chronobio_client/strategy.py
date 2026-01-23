@@ -321,7 +321,7 @@ class Strategy:
                             break
 
         # ============================================================
-        # PRIORITÉ 4 : CUISINER (quand stock de chaque légume augmente!)
+        # PRIORITÉ 4 : CUISINER (MAXIMISER la production de soupes pour revenus!)
         # ============================================================
         # Vérifier que le stock de chaque légume augmente
         stock_par_legume = {
@@ -336,54 +336,67 @@ class Strategy:
         if total_stock > 0:
             print(f"  📦 Stock actuel: P{stock_par_legume['POTATO']} L{stock_par_legume['LEEK']} T{stock_par_legume['TOMATO']} O{stock_par_legume['ONION']} Z{stock_par_legume['ZUCCHINI']} | Total: {total_stock}")
         
-        # Cuisiner si : usine OK + stock > 500 + au moins 3 légumes différents
-        # Production de soupes = revenus réguliers pour tenir 5 ans
-        if factory_days_off == 0 and total_stock > 500:
-            legumes_disponibles = sum(1 for v in stock_par_legume.values() if v >= 50)
-            if legumes_disponibles >= 3 and available_employees_any:
-                # Cuisiner avec 1 employé (production continue) - peut être à FARM ou dans champ
-                emp_id = available_employees_any[0]
-                commands.append(f"{emp_id} CUISINER")
-                if emp_id in available_employees_any:
-                    available_employees_any.remove(emp_id)
-                if emp_id in available_employees_farm:
-                    available_employees_farm.remove(emp_id)
-                print(f"  🍲 CUISINER → Soupes (stock: P{stock_par_legume['POTATO']} L{stock_par_legume['LEEK']} T{stock_par_legume['TOMATO']} O{stock_par_legume['ONION']} Z{stock_par_legume['ZUCCHINI']})")
+        # CUISINER AGRESSIF : Réduire les seuils pour produire plus tôt et plus souvent
+        # Production de soupes = revenus réguliers pour réinvestir dans la production
+        if factory_days_off == 0 and total_stock > 300:  # Réduit de 500 à 300 pour cuisiner plus tôt
+            legumes_disponibles = sum(1 for v in stock_par_legume.values() if v >= 30)  # Réduit de 50 à 30
+            if legumes_disponibles >= 3:
+                # MAXIMISER les cuisiniers : utiliser TOUS les employés disponibles pour cuisiner
+                # Plus de cuisiniers = plus de soupes = plus de revenus = plus d'investissement
+                cuisiniers_max = min(3, len(available_employees_any))  # Jusqu'à 3 cuisiniers en parallèle
+                for _ in range(cuisiniers_max):
+                    if available_employees_any:
+                        emp_id = available_employees_any[0]
+                        commands.append(f"{emp_id} CUISINER")
+                        available_employees_any.remove(emp_id)
+                        if emp_id in available_employees_farm:
+                            available_employees_farm.remove(emp_id)
+                print(f"  🍲 CUISINER ×{cuisiniers_max} → Soupes (stock: P{stock_par_legume['POTATO']} L{stock_par_legume['LEEK']} T{stock_par_legume['TOMATO']} O{stock_par_legume['ONION']} Z{stock_par_legume['ZUCCHINI']}) → +revenus")
         
         # ============================================================
-        # PRIORITÉ 5 : GESTION EMPLOYÉS (1 par champ + tracteurs)
+        # PRIORITÉ 5 : INVESTISSEMENT PRODUCTION (utiliser l'argent pour maximiser stock!)
         # ============================================================
         # Calculer jours de salaires restants
         total_salaries = sum(emp.get("salary", 0) for emp in employees)
         jours_salaires = money / total_salaries if total_salaries > 0 else 999
         
-        # Objectif : 2 ouvriers par champ + 1 tracteur par champ
-        # MAIS LIMITER pour tenir 5 ans (1825 jours) : max 3 champs, max 3 tracteurs
+        # Objectif : MAXIMISER la production = plus de champs + plus de tracteurs + plus d'ouvriers
+        # Utiliser l'argent disponible pour augmenter le stock de légumes
         nb_champs = len(owned_fields)
-        nb_champs_max = min(nb_champs, 3)  # Max 3 champs pour sécurité financière
+        nb_champs_max = min(nb_champs, 5)  # Augmenté à 5 champs max pour plus de production
         nb_ouvriers_necessaires = nb_champs_max * 2  # 2 par champ pour rotation FARM
-        nb_tracteurs_necessaires = min(nb_champs_max, 3)  # Max 3 tracteurs
+        nb_tracteurs_necessaires = nb_champs_max  # 1 tracteur par champ pour STOCKER
         
-        # SÉCURITÉ POUR 5 ANS : Buffer de 50 jours de salaires minimum
-        buffer_securite = 50  # Jours de salaires en réserve
+        # BUFFER RÉDUIT : Utiliser l'argent plus agressivement pour la production
+        buffer_securite = 30  # Réduit de 50 à 30 jours pour investir plus tôt
         
-        # Acheter tracteur si besoin (1 par champ) MAIS avec buffer de sécurité élevé
+        # PRIORITÉ 1 : Acheter tracteur (STOCKER = +2000 stock vs VENDRE = ~3000€)
+        # Investir tôt pour maximiser le stock de légumes
         if (len(tractors) < nb_tracteurs_necessaires and 
-            money > 50000 and 
+            money > 35000 and  # Réduit de 50000
             jours_salaires > buffer_securite and
-            len(tractors) < 3):  # Max 3 tracteurs
+            len(tractors) < 5):  # Augmenté à 5 tracteurs max
             commands.append("0 ACHETER_TRACTEUR")
-            print(f"  🚜 ACHETER_TRACTEUR ({len(tractors)+1}/{nb_tracteurs_necessaires} tracteurs, {jours_salaires:.0f}j sécurité)")
+            print(f"  🚜 ACHETER_TRACTEUR ({len(tractors)+1}/{nb_tracteurs_necessaires} tracteurs, {jours_salaires:.0f}j sécurité) → +production stock")
         
-        # Acheter champ si capital TRÈS élevé ET buffer important
-        if (money > 150000 and 
-            len(owned_fields) < 3 and  # Max 3 champs pour sécurité
-            jours_salaires > buffer_securite + 20):  # Buffer encore plus élevé
+        # PRIORITÉ 2 : Acheter champ (plus de champs = plus de légumes!)
+        # Investir dans l'expansion pour augmenter la capacité de production
+        if (money > 80000 and  # Réduit de 150000 pour investir plus tôt
+            len(owned_fields) < 5 and  # Augmenté à 5 champs max
+            jours_salaires > buffer_securite + 10):  # Buffer réduit
             commands.append("0 ACHETER_CHAMP")
-            print(f"  🏞️ ACHETER_CHAMP ({len(owned_fields)+1}/3 champs, {jours_salaires:.0f}j sécurité)")
+            print(f"  🏞️ ACHETER_CHAMP ({len(owned_fields)+1}/5 champs, {jours_salaires:.0f}j sécurité) → +capacité production")
         
-        # LICENCIER si capital critique (< 10 jours de salaires) ET trop d'employés
-        if jours_salaires < 10 and len(employees) > nb_ouvriers_necessaires:
+        # PRIORITÉ 3 : Embaucher (plus d'ouvriers = plus d'actions/jour = plus de production!)
+        # Investir dans la main-d'œuvre pour maximiser les actions quotidiennes
+        if (len(employees) < nb_ouvriers_necessaires and 
+            jours_salaires > buffer_securite and 
+            money > 30000):  # Réduit de 50000 pour embaucher plus tôt
+            commands.append("0 EMPLOYER")
+            print(f"  👤 EMPLOYER ({len(employees)+1}/{nb_ouvriers_necessaires} ouvriers, {jours_salaires:.0f}j sécurité) → +actions/jour")
+        
+        # LICENCIER seulement si vraiment critique (< 5 jours de salaires)
+        if jours_salaires < 5 and len(employees) > nb_ouvriers_necessaires:
             # Licencier les employés en trop (les plus chers d'abord)
             employees_sorted = sorted(employees, key=lambda e: e.get("salary", 0), reverse=True)
             for emp in employees_sorted:
@@ -397,13 +410,6 @@ class Strategy:
                         del self._field_assignments[emp_id]
                     print(f"  ⚠️ LICENCIER emp #{emp_id} (capital critique: {jours_salaires:.1f}j)")
                     break
-        
-        # Embaucher si besoin (1 par champ) ET capital TRÈS confortable
-        if (len(employees) < nb_ouvriers_necessaires and 
-            jours_salaires > buffer_securite and 
-            money > 50000):
-            commands.append("0 EMPLOYER")
-            print(f"  👤 EMPLOYER ({len(employees)+1}/{nb_ouvriers_necessaires} ouvriers, {jours_salaires:.0f}j sécurité)")
 
         return commands
 
