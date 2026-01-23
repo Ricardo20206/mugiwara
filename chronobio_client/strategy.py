@@ -409,7 +409,7 @@ class Strategy:
                     if emp_id in self._field_assignments:
                         del self._field_assignments[emp_id]
                     print(f"  ⚠️ LICENCIER emp #{emp_id} (capital critique: {jours_salaires:.1f}j)")
-                    break
+                break
 
         return commands
 
