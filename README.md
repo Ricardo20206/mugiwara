@@ -145,102 +145,125 @@ chronobio_client/
 └── README.md
 ```
 
-## 🎯 Stratégie actuelle : PROGRESSIVE RÉALISTE ✨
+## 🎯 Stratégie actuelle : PROGRESSIVE - Légumes d'abord ✨
 
 ### Vue d'ensemble
 
-La stratégie **PROGRESSIVE RÉALISTE** garantit une production de légumes et de soupes dès le début :
+La stratégie **PROGRESSIVE** se concentre sur la production de légumes AVANT les soupes, évitant les blocages précoces dus aux salaires :
 
-- **🚀 Production immédiate** : 1 tracteur acheté au jour 1 (CRITIQUE pour récolter!)
-- **📐 Architecture modulaire** : Code séparé en modules testables (client, stratégie, game_state, actions)
-- **🌱 Rotation complète** : COURGETTE (prioritaire), TOMATE, PATATE, POIREAU, OIGNON
-- **🍲 Cuisine aggressive** : Jusqu'à 5 ouvriers cuisinent simultanément
-- **⚡ Seuils optimisés** : Cuisine dès 15 légumes (au lieu de 20-40)
-- **💰 Capital préservé** : 3 champs initiaux (reste 70k EUR pour l'expansion)
-- **📊 Buffer adaptatif** : 5 jours (début) → 10 jours (établi) → 15 jours (mature)
-- **🧪 Qualité maximale** : 86 tests, 100% couverture, 0 erreur linter/mypy
+- **🌱 Priorité légumes** : Production légumes uniquement jusqu'à avoir suffisamment de capital et stock
+- **💰 Capital sécurisé** : 3 champs + 1 tracteur = 60k dépensés, 40k EUR restants (vs 10k avant)
+- **👤 0 ouvriers au départ** : Le gérant (ID 0) cultive seul pour éviter les salaires
+- **📊 Conditions Phase 2** : Cuisiner SEULEMENT si 100k+ EUR ET 200+ de chaque légume
+- **🔄 Rotation complète** : COURGETTE, TOMATE, PATATE, POIREAU, OIGNON (diversité garantie)
+- **⚡ Expansion très prudente** : Embauche à 150k EUR, 2e tracteur à 200k EUR
+- **🧪 Qualité maximale** : 16 tests, 100% couverture, 0 erreur linter/mypy
 
-### 🔑 Changements Clés par rapport aux versions précédentes
+### 🔑 Changements Clés - Pourquoi cette stratégie?
 
-**Problèmes résolus :**
-1. ❌ **Ancienne stratégie** : 5 champs jour 0 → reste 50k EUR → buffer 20 jours × 3000 = 60k → **Blocage expansion!**
-2. ✅ **Nouvelle stratégie** : 3 champs jour 0 → reste 70k EUR → buffer 5 jours × 2000 = 10k → **Expansion garantie!**
-3. ✅ **Tracteur jour 1** : Permet la récolte immédiate (sans tracteur = pas de légumes!)
-4. ✅ **Buffer adaptatif** : Agressif au début (5 jours) pour permettre l'expansion rapide
+**Problème critique découvert :**
+- Le jeu anticipe les salaires sur **6 mois à 2 ans** avec augmentation de 1%/mois
+- **Embaucher tôt = blocage** même avec 175 jours de buffer visible!
+- Exemple: Jour 23, 11k EUR, 2 ouvriers (2k EUR/jour) → **BLOCAGE** malgré 5.5 jours buffer
 
-### Phase 1 : Démarrage Agressif (Jours 0-5)
+**Solution radicale :**
+1. ❌ **Stratégies avec employés précoces** : Blocage J3-J23 (testé avec 50k-350k EUR!)
+2. ✅ **Stratégie 0 ouvriers** : Survie garantie 1799 jours ✅
+3. ✅ **Gérant seul (ID 0)** : Peut semer/arroser/récolter/cuisiner SANS salaire!
+4. ✅ **Capital doublé** : 40k EUR vs 10k EUR (1 tracteur vs 2)
 
+### Phase 1 : PRODUCTION LÉGUMES (Jours 1-200+)
+
+**Configuration initiale optimale :**
 ```
-Jour 0: ACHETER 3 CHAMPS (30k EUR, reste 70k capital!)
-Jour 1: EMPLOYER 2 OUVRIERS + ACHETER 1 TRACTEUR (production immédiate!)
-       → 2 ouvriers peuvent semer, 1 tracteur peut récolter
-       → Coût: 2k + 30k = 32k, reste 38k EUR
+Jour 0: 3 CHAMPS + 1 TRACTEUR + 0 OUVRIERS
+        Dépenses: 30k (champs) + 30k (tracteur) = 60k EUR
+        Capital restant: 40k EUR
+        Salaires: 0 EUR/jour → BLOCAGE IMPOSSIBLE!
+```
 
-Jour 3: EMPLOYER 1 OUVRIER (total: 3)
-       → Condition: argent > 5 jours × 2k + 5k = 15k EUR ✅
+**Activités Phase 1 :**
+```
+Gérant (ID 0) travaille SEUL:
+- Sème 5 légumes en rotation (COURGETTE → TOMATE → PATATE → POIREAU → OIGNON)
+- Arrose les champs
+- Récolte avec le tracteur (1 champ/jour)
+- Vend les légumes → Accumulation capital
+- PAS de soupes (stock insuffisant)
+```
 
-Jour 5: ACHETER 1 CHAMP (total: 4)
-       → Condition: argent > 5 jours × 3k + 10k = 25k EUR
+**Objectifs Phase 1 :**
+- ✅ Stock diversifié: 200+ de CHAQUE légume
+- ✅ Capital sécurisé: 100k+ EUR minimum
+- ✅ Survie garantie: AUCUN salaire à payer!
+
+### Phase 2 : SOUPES (Production accélérée)
+
+**Activation Phase 2 :**
+```
+✅ Stock: 500+ total
+✅ Au moins 3 légumes différents avec 50+ chacun
+✅ Usine: Disponible (days_off = 0)
+```
+
+**Production Phase 2 :**
+```
+- Production continue avec 1-2 cuisiniers
+- Revenus réguliers pour maintenir le buffer de sécurité
+- Diversité garantie (3+ légumes différents)
+```
+
+### Phase 3 : EXPANSION PRUDENTE (Buffer de 50 jours minimum)
+
+**Expansion très progressive :**
+```
+✅ Buffer de sécurité: 50 jours de salaires minimum
+✅ Acheter tracteur: 50k+ EUR + 50 jours de sécurité
+✅ Acheter champ: 150k+ EUR + 70 jours de sécurité
+✅ Embaucher: 50k+ EUR + 50 jours de sécurité
+✅ Max 3 champs (sécurité financière)
+✅ Max 3 tracteurs
+```
+
+**Protection anti-blocage :**
+```
+- Licenciement préventif si < 10 jours de salaires
+- Expansion uniquement avec buffer massif
+- Production continue pour revenus réguliers
 ```
 
 **Avantages :**
-- ✅ **Production GARANTIE** : Tracteur dès jour 1 = récolte possible
-- ✅ **Capital suffisant** : 70k EUR permettent l'expansion sans blocage
-- ✅ **Buffer réaliste** : 5 jours au début (au lieu de 20) = expansion rapide
-- ✅ **Rotation immédiate** : 2-3 ouvriers sèment tous les légumes
-
-### Phase 2 : Consolidation (Jours 6-20)
-
-```
-Jour 8:  EMPLOYER 1 OUVRIER (total: 4)
-Jour 12: ACHETER 1 TRACTEUR (total: 2, récolte accélérée!)
-Jour 16: ACHETER 1 CHAMP (total: 5, complet!)
-```
-
-**Avantages :**
-- Production de légumes stable et diversifiée
-- 2 tracteurs = récolte de 2 champs simultanément
-- 5 champs complets = rotation optimale
-- Buffer passe à 10 jours (plus de sécurité)
-
-### Phase 3 : Expansion Contrôlée (Jour 21+)
-
-```
-Jour 21+: EMPLOYER 1 OUVRIER tous les 5 jours (jusqu'à 10 total)
-Jour 25:  ACHETER 1 TRACTEUR (total: 3, complet!)
-```
-
-**Avantages :**
-- Production massive de soupes (jusqu'à 5 cuisiniers)
-- 3 tracteurs = récolte très rapide
-- 10 ouvriers = gestion optimale de 5 champs
-- Buffer passe à 15 jours (sécurité maximale)
+- ✅ Stabilité financière garantie sur 5 ans
+- ✅ Production continue avec rotation ouvriers
+- ✅ Objectif: 1825 jours (5 ans) sans blocage
 
 ### Priorités d'actions (ordre d'exécution)
 
-1. **EXPANSION** (jours spécifiques uniquement)
-   - Jour 0: 3 champs
-   - Jour 1: 2 ouvriers + 1 tracteur
-   - Jours 3, 5, 8, 12, 16, 21, 25: expansion progressive
-   - Conditions strictes pour éviter les blocages
+1. **SEMER** (rotation complète sur tous les champs)
+   - Rotation: PATATE → OIGNON → TOMATE → COURGETTE → POIREAU
+   - Ouvriers dans le champ correspondant OU à FARM
+   - Fallback: Gérant (id=0) si aucun ouvrier disponible
 
-2. **RÉCOLTER** (priorité absolue)
-   - Dès qu'un champ est prêt (needed_water = 0)
-   - Nécessite: 1 ouvrier libre + 1 tracteur libre
-   - Stockage automatique dans l'usine à soupe
+2. **ARROSER** (maintenir la croissance)
+   - Ouvriers dans le champ correspondant OU à FARM
+   - Priorité aux champs avec le moins d'eau restante
+   - Continuité de production même si tous dans les champs
 
-3. **CUISINER** (production de revenus)
-   - Conditions: stock >= 15 légumes ET diversité >= 3 par légume
-   - Jusqu'à 5 ouvriers cuisinent en parallèle
-   - Vente automatique des soupes
+3. **RÉCOLTER** (production de stock)
+   - STOCKER avec tracteur (priorité) → +2000 stock
+   - VENDRE avec gérant si pas de tracteur → ~3000€
+   - Ouvriers dans le champ correspondant OU à FARM
 
-4. **ARROSER** (maintenir la production)
-   - Tri par urgence: moins d'eau restante = priorité
-   - Utilise tous les ouvriers disponibles
+4. **CUISINER** (revenus réguliers)
+   - Conditions: stock > 500 + 3 légumes différents (50+ chacun)
+   - Production continue avec 1-2 cuisiniers
+   - Revenus pour maintenir le buffer de sécurité
 
-5. **SEMER** (remplir les champs vides)
-   - Rotation: COURGETTE (prioritaire) → TOMATE → PATATE → POIREAU → OIGNON
-   - Seulement ouvriers à la ferme (location = FARM)
+5. **EXPANSION** (buffer de 50 jours minimum)
+   - Acheter tracteur: 50k+ EUR + 50 jours de sécurité
+   - Acheter champ: 150k+ EUR + 70 jours de sécurité
+   - Embaucher: 50k+ EUR + 50 jours de sécurité
+   - Max 3 champs, 3 tracteurs
 
 ### Modifier la stratégie
 
@@ -248,91 +271,103 @@ Ouvrez `chronobio_client/strategy.py` et modifiez la classe `Strategy`.
 
 **Exemples de modifications :**
 
-#### Changer les constantes d'expansion
+#### Changer les constantes de production
 
 ```python
 # Dans strategy.py, modifier les constantes en haut:
 
-# Configuration actuelle (PROGRESSIVE RÉALISTE)
-MAX_EMPLOYEES = 10      # Objectif à long terme
-MAX_TRACTORS = 3
-MAX_FIELDS = 5
-MIN_STOCK_TO_COOK = 15  # Cuisine dès 15 légumes
+# Configuration actuelle (PROGRESSIVE - Légumes d'abord)
+MAX_EMPLOYEES = 8       # Max 8 ouvriers
+MAX_TRACTORS = 3        # Max 3 tracteurs
+MAX_FIELDS = 5          # Max 5 champs
+MIN_STOCK_TO_COOK = 20  # Minimum pour cuisiner
 MIN_DIVERSITY = 3       # 3 par légume minimum
-MAX_COOKS = 5           # 5 cuisiniers en parallèle
+MAX_COOKS = 4           # 4 cuisiniers max
 
-# Plus agressif (risqué mais rapide)
-MAX_EMPLOYEES = 15      # Plus d'ouvriers
-MIN_STOCK_TO_COOK = 10  # Cuisine plus tôt
-MIN_DIVERSITY = 2       # Moins strict
-
-# Plus conservateur (stable mais lent)
-MAX_EMPLOYEES = 8       # Moins d'ouvriers
-MIN_STOCK_TO_COOK = 25  # Accumule plus avant cuisine
-MIN_DIVERSITY = 4       # Plus strict
-```
-
-#### Ajuster le buffer adaptatif
-
-```python
-# Dans get_actions(), modifier la logique du buffer:
-
-# Configuration actuelle (PROGRESSIVE)
-if self.turn_count <= 10:
-    buffer_days = 5  # Début: très agressif
-elif self.turn_count <= 50:
-    buffer_days = 10  # Établissement: modéré
-else:
-    buffer_days = 15  # Mature: prudent
-
-# Plus agressif (expansion rapide)
-if self.turn_count <= 20:
-    buffer_days = 3  # Ultra-agressif au début
-elif self.turn_count <= 100:
-    buffer_days = 7  # Modéré
-else:
-    buffer_days = 12  # Prudent
+# Plus agressif (si vous voulez tester)
+# ⚠️ ATTENTION: Peut causer des blocages salaires!
+MAX_EMPLOYEES = 12      # Plus d'ouvriers
+MAX_COOKS = 6           # Plus de cuisiniers
 
 # Plus conservateur (sécurité maximale)
-if self.turn_count <= 5:
-    buffer_days = 10  # Prudent dès le début
-else:
-    buffer_days = 20  # Très prudent après
+MAX_EMPLOYEES = 5       # Moins d'ouvriers
+MIN_STOCK_TO_COOK = 30  # Accumule plus avant cuisine
 ```
 
-#### Modifier le plan d'expansion
+#### Modifier les conditions Phase 2 (soupes)
 
 ```python
-# Dans get_actions(), modifier les jours spécifiques:
+# Dans _cook_soups(), modifier les seuils:
 
-# Démarrage TRÈS agressif (plus risqué)
+# Configuration actuelle
+if money < 100000:  # 100k EUR minimum
+    return actions
+if min_stock_per_vegetable < 200:  # 200 de chaque minimum
+    return actions
+
+# Plus agressif (cuisiner plus tôt)
+if money < 50000:  # 50k EUR minimum
+    return actions
+if min_stock_per_vegetable < 100:  # 100 de chaque minimum
+    return actions
+
+# Plus conservateur (accumulation maximale)
+if money < 200000:  # 200k EUR minimum
+    return actions
+if min_stock_per_vegetable < 300:  # 300 de chaque minimum
+    return actions
+```
+
+#### Modifier les seuils d'expansion
+
+```python
+# Dans get_actions(), modifier les conditions d'embauche:
+
+# Configuration actuelle (TRÈS PRUDENTE)
+elif num_employees < 1 and money > 150000:  # 1er ouvrier à 150k
+    actions.append("0 EMPLOYER")
+elif num_tractors < 2 and num_employees >= 1 and money > 200000:  # 2e tracteur à 200k
+    actions.append("0 ACHETER_TRACTEUR")
+
+# Plus agressif (⚠️ RISQUE DE BLOCAGE!)
+elif num_employees < 1 and money > 80000:  # 1er ouvrier à 80k
+    actions.append("0 EMPLOYER")
+elif num_tractors < 2 and num_employees >= 1 and money > 120000:  # 2e tracteur à 120k
+    actions.append("0 ACHETER_TRACTEUR")
+
+# Plus conservateur (SÉCURITÉ MAXIMALE)
+elif num_employees < 1 and money > 250000:  # 1er ouvrier à 250k
+    actions.append("0 EMPLOYER")
+elif num_tractors < 2 and num_employees >= 1 and money > 350000:  # 2e tracteur à 350k
+    actions.append("0 ACHETER_TRACTEUR")
+```
+
+#### Modifier la configuration initiale
+
+```python
+# Dans get_actions(), jour 0:
+
+# Configuration actuelle (3 champs + 1 tracteur)
 if self.turn_count == 1:
-    for _ in range(4):  # 4 champs au lieu de 3
+    for _ in range(3):
         actions.append("0 ACHETER_CHAMP")
-elif self.turn_count == 2:
-    for _ in range(3):  # 3 ouvriers au lieu de 2
-        actions.append("0 EMPLOYER")
-    if num_tractors < 1:
+    actions.append("0 ACHETER_TRACTEUR")
+
+# Plus agressif: 4 champs + 2 tracteurs
+# ⚠️ Capital restant: seulement 10k EUR!
+if self.turn_count == 1:
+    for _ in range(4):
+        actions.append("0 ACHETER_CHAMP")
+    for _ in range(2):
         actions.append("0 ACHETER_TRACTEUR")
 
-# Démarrage TRÈS conservateur (plus stable)
+# Plus conservateur: 2 champs + 1 tracteur
+# Capital restant: 60k EUR
 if self.turn_count == 1:
-    for _ in range(2):  # 2 champs au lieu de 3
+    for _ in range(2):
         actions.append("0 ACHETER_CHAMP")
-elif self.turn_count == 2:
-    actions.append("0 EMPLOYER")  # 1 seul ouvrier
-    # Pas de tracteur jour 1
+    actions.append("0 ACHETER_TRACTEUR")
 ```
-
-#### Ajuster la cuisine
-
-```python
-# Dans _cook_soups(), modifier la logique:
-
-# Plus agressif: cuisiner sans diversité stricte
-total_stock = sum(stock.values())
-if total_stock < MIN_STOCK_TO_COOK:
-    return actions
 
 # Cuisiner même sans diversité complète si stock > 30
 if total_stock >= 30:
@@ -520,33 +555,75 @@ Condition: money > 60 000 + 30 000 = 90 000 EUR ❌ ÉCHEC!
 
 ---
 
-### ✅ Stratégie 3: PROGRESSIVE RÉALISTE (Actuelle - Production Garantie!)
+### ⚠️ Stratégie 3: PROGRESSIVE RÉALISTE (Blocage Jour 23)
 
-**Philosophie:** Production GARANTIE dès le début + Expansion progressive réaliste
+**Configuration:**
+- Jour 0: 3 champs + 2 tracteurs (90k EUR)
+- Jour 10: +1 ouvrier
+- Jour 20: +2 ouvriers
+- Buffer visible: 5.5 jours
 
-**Configuration INNOVANTE:**
-- 🚀 **Tracteur jour 1**: CRITIQUE pour récolter dès le début!
-- 💰 **Capital préservé**: 3 champs (reste 70k au lieu de 50k)
-- 📊 **Buffer adaptatif**: 5j (début) → 10j (établi) → 15j (mature)
-- 🌱 **Rotation complète**: COURGETTE prioritaire + 4 autres
-- 🍲 **Cuisine optimisée**: Seuil 15 légumes, jusqu'à 5 cuisiniers
-- 📈 **Expansion garantie**: Conditions réalistes dès le début
+**Résultat:** ❌ **Blocage au jour 23** - Argent: 11k EUR, Salaires: 2k EUR/jour
 
-**Solution au Problème du Buffer:**
+**Problème CRITIQUE découvert:**
+```
+Le jeu anticipe les salaires sur 6 MOIS À 2 ANS!
+- Salaires augmentent de 1%/mois
+- Projection totale requise: ~100k-200k EUR minimum
+- Même avec 175 jours de buffer visible → BLOCAGE!
+```
 
-| Stratégie | Jour 4 | Argent | Buffer | Condition Tracteur | Résultat |
-|-----------|--------|--------|--------|--------------------|----------|
-| **SOUTENABLE** ❌ | 3 ouvriers | 50k | 60k (20j×3k) | 90k EUR requis | **ÉCHEC** |
-| **PROGRESSIVE** ✅ | 2 ouvriers | 68k | 10k (5j×2k) | 40k EUR requis | **SUCCÈS** |
+**Tests exhaustifs:**
+- 50k EUR + 25j buffer → Blocage J3 ❌
+- 150k EUR + 75j buffer → Blocage J3 ❌
+- 350k EUR + 175j buffer → Blocage J3 ❌
 
-**Plan d'Expansion Détaillé:**
+**Leçon:** Impossible d'embaucher tôt sans capital MASSIF!
 
-| Jour | Action | Coût | Argent restant | Buffer | Condition | Statut |
-|------|--------|------|----------------|--------|-----------|--------|
-| **0** | ACHETER 3 CHAMPS | -30k | 70k | 0 | Toujours | ✅ OK |
-| **1** | EMPLOYER 2 + TRACTEUR | -32k | 38k | 10k (5j×2k) | Toujours | ✅ OK |
-| **3** | EMPLOYER 1 | 0 | 38k+ | 15k (5j×3k) | >20k EUR | ✅ OK |
-| **5** | ACHETER CHAMP | -10k | 28k+ | 15k | >25k EUR | ✅ OK |
+---
+
+### ✅ Stratégie 4: PROGRESSIVE - Optimisée pour 5 ans (Actuelle - 1825 jours cible!)
+
+**Philosophie:** 0 ouvriers + Production légumes PUIS soupes
+
+**Configuration RADICALE:**
+- 👤 **0 ouvriers au départ**: Gérant (ID 0) travaille SEUL
+- 💰 **Capital doublé**: 40k EUR restants (vs 10k avant)
+- 🌱 **Focus légumes**: Production uniquement jusqu'à 100k+ EUR
+- 🍲 **Soupes conditionnelles**: SEULEMENT si 100k+ EUR ET 200+ stock
+- 📈 **Expansion ultra-prudente**: 1er ouvrier à 150k EUR minimum
+
+**Solution RADICALE au Problème des Salaires:**
+
+| Stratégie | Config initiale | Salaires | Buffer sécurité | Résultat |
+|-----------|----------------|----------|----------------|----------|
+| **PROGRESSIVE RÉALISTE** ❌ | 3 champs + 2 tracteurs + 2 ouvriers J1 | 2000 EUR/jour | 5 jours | **Blocage J23** |
+| **+ EMPRUNT 100k** ❌ | + Loan 100k (capital: 150k) | 2000 EUR/jour | 5 jours | **Blocage J3** |
+| **+ EMPRUNT 300k** ❌ | + Loan 300k (capital: 350k) | 2000 EUR/jour | 5 jours | **Blocage J3** |
+| **0 OUVRIER (Diagnostic)** ✅ | 5 champs + 0 ouvriers | 0 EUR/jour | 5 jours | **1799 jours OK** |
+| **PROGRESSIVE - Légumes** ✅ | 3 champs + 1 tracteur + 0 ouvriers | 0 EUR/jour | 5 jours | **1799 jours OK** |
+| **PROGRESSIVE - 5 ans** ✅ | 2 champs + 2 tracteurs + 4 ouvriers | 4000 EUR/jour | **50 jours** | **1825 jours cible** |
+
+**Plan de Survie Garantie:**
+
+| Phase | Actions | Salaires | Capital | Résultat |
+|-------|---------|----------|---------|----------|
+| **Jours 1-200** | Gérant cultive seul | 0 EUR/jour | 40k → 100k+ | ✅ **Accumulation** |
+| **Jours 200+** | Cuisiner si 100k+ ET 200+ stock | 0 EUR/jour | 100k+ | ✅ **Phase 2** |
+| **Capital > 150k** | +1er ouvrier | 1000 EUR/jour | 150k+ | ✅ **Expansion** |
+
+**Résultats Attendus:**
+- ✅ **Survie**: 1799 jours garantis (aucun blocage salaires)
+- ✅ **Stock**: Diversifié dès le début (rotation 5 légumes)
+- ✅ **Capital**: 100k+ EUR avant Phase 2 (soupes)
+- ✅ **Score**: 300k-500k EUR à J1799 (vs 200k avant)
+- ✅ **Robustesse**: Aucune dépendance aux employés précoces
+
+**Avantages décisifs:**
+1. **Blocage impossible**: 0 salaires = 0 risque
+2. **Gérant autonome**: Peut TOUT faire seul (semer/arroser/récolter/cuisiner)
+3. **Capital sécurisé**: 40k EUR vs 10k EUR (x4 mieux)
+4. **Expansion garantie**: Seulement quand capital > 150k EUR
 | **8** | EMPLOYER 1 | 0 | Variable | 20k (5j×4k) | >25k EUR | ✅ OK |
 | **12** | ACHETER TRACTEUR | -30k | Variable | 40k (10j×4k) | >70k EUR | ✅ OK |
 | **16** | ACHETER CHAMP | -10k | Variable | Buffer 10j | >50k EUR | ✅ OK |
