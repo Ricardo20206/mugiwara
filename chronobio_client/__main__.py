@@ -30,7 +30,7 @@ def main() -> None:
         "--username",
         type=str,
         default="mugiwara",
-        help="Nom d'utilisateur du client (défaut: mugiwara)",
+        help="Nom de votre ferme (défaut: mugiwara)",
     )
 
     args = parser.parse_args()
@@ -52,7 +52,6 @@ def main() -> None:
             print("\n🔍 Informations de debug:")
             print(f"  Serveur: {args.address}:{args.port}")
             print(f"  Utilisateur: {args.username}")
-            print(f"  Dernières commandes envoyées: {client._commands}")
 
         sys.exit(1)
 

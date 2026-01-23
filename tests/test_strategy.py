@@ -4,408 +4,249 @@ from chronobio_client.strategy import Strategy
 
 
 class TestStrategy:
-    """Tests pour la classe Strategy."""
+    """Tests de la classe Strategy."""
 
-    def setup_method(self):
-        """Configuration avant chaque test."""
-        self.strategy = Strategy()
-
-    def test_initialization(self):
-        """Test de l'initialisation de la stratégie."""
-        assert self.strategy.turn_count == 0
-        assert self.strategy.vegetable_index == 0
-
-    def test_turn_count_increments(self):
-        """Test que le compteur de tours s'incrémente."""
-        farm_data = {
-            "money": 100000,
-            "employees": [],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.get_actions(farm_data)
-        assert self.strategy.turn_count == 1
-
-        self.strategy.get_actions(farm_data)
-        assert self.strategy.turn_count == 2
-
-    def test_day_1_actions(self):
-        """Test des actions au jour 1: 3 champs + 1 tracteur + 0 ouvrier."""
-        farm_data = {
-            "money": 100000,
-            "employees": [],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        actions = self.strategy.get_actions(farm_data)
-
-        # Stratégie RADICALE: 3 champs + 1 tracteur + 0 ouvrier
-        assert len(actions) == 4
-        assert sum(1 for a in actions if "EMPRUNTER" in a) == 0
-        assert sum(1 for a in actions if "ACHETER_CHAMP" in a) == 3
-        assert sum(1 for a in actions if "ACHETER_TRACTEUR" in a) == 1
-        assert sum(1 for a in actions if "EMPLOYER" in a) == 0
-
-    def test_day_2_actions(self):
-        """Test des actions au jour 2: RIEN (production uniquement)."""
-        farm_data = {
-            "money": 40000,  # Argent après investissement (100k - 60k)
-            "employees": [],  # 0 ouvrier!
-            "fields": [
-                {"bought": True, "content": "NONE", "location": f"FIELD{i}"}
-                for i in range(1, 4)
-            ],
-            "tractors": [{"id": 1}],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 1  # Simuler jour 2
-        actions = self.strategy.get_actions(farm_data)
-
-        # Stratégie RADICALE: RIEN au jour 2 (juste production)
-        expansion_actions = [a for a in actions if "EMPLOYER" in a or "ACHETER" in a or "EMPRUNTER" in a]
-        assert len(expansion_actions) == 0
-
-    def test_harvest_fields(self):
-        """Test de la récolte des champs."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "POTATO", "needed_water": 0, "location": "FIELD1"}
-            ],
-            "tractors": [
-                {"id": 1}
-            ],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait récolter le champ (STOCKER)
-        harvest_actions = [a for a in actions if "STOCKER" in a]
-        assert len(harvest_actions) >= 1
-        assert "1 STOCKER 1 1" in harvest_actions[0]
-
-    def test_water_fields(self):
-        """Test de l'arrosage des champs."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "POTATO", "needed_water": 3, "location": "FIELD1"}
-            ],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait arroser le champ
-        water_actions = [a for a in actions if "ARROSER" in a]
-        assert len(water_actions) >= 1
-        assert "1 ARROSER 1" in water_actions[0]
-
-    def test_sow_fields(self):
-        """Test du semis sur champs vides."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "NONE", "location": "FIELD1"}
-            ],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait semer un légume
-        sow_actions = [a for a in actions if "SEMER" in a]
-        assert len(sow_actions) >= 1
-        # Vérifier qu'un légume valide est semé
-        assert any(veg in sow_actions[0] for veg in ["PATATE", "POIREAU", "TOMATE", "OIGNON", "COURGETTE"])
-
-    def test_cook_soups(self):
-        """Test de la cuisine de soupes."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 2, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {
-                "stock": {
-                    "POTATO": 50,
-                    "LEEK": 50,
-                    "TOMATO": 50,
-                    "ONION": 50,
-                    "ZUCCHINI": 50
-                },
-                "days_off": 0
-            }
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait cuisiner avec plusieurs ouvriers
-        cook_actions = [a for a in actions if "CUISINER" in a]
-        assert len(cook_actions) >= 1
-        # Devrait utiliser max 4 ouvriers
-        assert len(cook_actions) <= 4
-
-    def test_cook_soups_without_diversity(self):
-        """Test que la diversité est requise (PRODUCTION SOUPE - 3 par légume)."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 2, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {
-                "stock": {
-                    "POTATO": 100,
-                    "LEEK": 2,
-                    "TOMATO": 2,
-                    "ONION": 2,
-                    "ZUCCHINI": 2
-                },
-                "days_off": 0
-            }
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # NE devrait PAS cuisiner sans diversité (3 par légume minimum)
-        cook_actions = [a for a in actions if "CUISINER" in a]
-        assert len(cook_actions) == 0
-
-    def test_no_cook_when_factory_busy(self):
-        """Test qu'on ne cuisine pas quand l'usine est occupée."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {
-                "stock": {"POTATO": 200},
-                "days_off": 3  # Usine occupée
-            }
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Ne devrait pas cuisiner
-        cook_actions = [a for a in actions if "CUISINER" in a]
-        assert len(cook_actions) == 0
-
-    def test_no_cook_when_insufficient_stock(self):
-        """Test qu'on ne cuisine pas avec un stock insuffisant (<20)."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {
-                "stock": {"POTATO": 10},  # < 20 minimum (stratégie STABLE)
-                "days_off": 0
-            }
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Ne devrait pas cuisiner car stock < 20
-        cook_actions = [a for a in actions if "CUISINER" in a]
-        assert len(cook_actions) == 0
-
-    def test_expansion_late_game(self):
-        """Test de l'expansion en fin de partie."""
-        farm_data = {
-            "money": 200000,  # Beaucoup d'argent
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 2, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "NONE", "location": "FIELD1"},
-                {"bought": True, "content": "NONE", "location": "FIELD2"},
-                {"bought": True, "content": "NONE", "location": "FIELD3"}
-            ],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 30  # Fin de partie
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait embaucher ou acheter des tracteurs
-        expansion_actions = [a for a in actions if "EMPLOYER" in a or "ACHETER_TRACTEUR" in a]
-        # Au moins une action d'expansion si on a assez d'argent
-        assert len(expansion_actions) >= 0  # Peut ne rien faire si déjà optimal
-
-    def test_vegetable_rotation(self):
-        """Test de la rotation avec COURGETTE priorisée."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 2, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 3, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 4, "location": "FARM", "tractor": None, "salary": 1000},
-                {"id": 5, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "NONE", "location": "FIELD1"},
-                {"bought": True, "content": "NONE", "location": "FIELD2"},
-                {"bought": True, "content": "NONE", "location": "FIELD3"},
-                {"bought": True, "content": "NONE", "location": "FIELD4"},
-                {"bought": True, "content": "NONE", "location": "FIELD5"}
-            ],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Devrait semer avec rotation
-        sow_actions = [a for a in actions if "SEMER" in a]
-        assert len(sow_actions) == 5  # 5 champs, 5 ouvriers
-
-        # Vérifier que TOUS les légumes sont présents (rotation complète)
-        vegetables_sown = set()
-        for action in sow_actions:
-            for veg in ["TOMATE", "PATATE", "POIREAU", "OIGNON", "COURGETTE"]:
-                if veg in action:
-                    vegetables_sown.add(veg)
-
-        # Avec 5 semis et rotation ["COURGETTE", "TOMATE", "PATATE", "POIREAU", "OIGNON"],
-        # on devrait avoir les 5 légumes
-        assert len(vegetables_sown) == 5
-
-        # COURGETTE devrait être en premier (index 0)
-        first_action = sow_actions[0] if sow_actions else ""
-        assert "COURGETTE" in first_action
-
-    def test_no_harvest_without_tractor(self):
-        """Test qu'on ne récolte pas sans tracteur."""
-        farm_data = {
-            "money": 100000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "POTATO", "needed_water": 0, "location": "FIELD1"}
-            ],
-            "tractors": [],  # Pas de tracteur
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-
-        self.strategy.turn_count = 10
-        actions = self.strategy.get_actions(farm_data)
-
-        # Ne devrait pas récolter sans tracteur
-        harvest_actions = [a for a in actions if "STOCKER" in a]
-        assert len(harvest_actions) == 0
-
-
-class TestStrategyPhases:
-    """Tests pour les différentes phases de la stratégie."""
-
-    def test_phase_1_expansion(self):
-        """Test de la phase 1: RADICALE - 3 champs + tracteur + 0 ouvrier."""
+    def test_initial_setup_day1(self):
+        """Teste le setup initial au jour 1."""
         strategy = Strategy()
+        strategy._day = 0  # Car get_actions() incrémente _day
+        farm = self._create_empty_farm()
 
-        # Jour 1: 3 champs + tracteur + 0 ouvrier
-        farm_data_day1 = {
-            "money": 100000,
-            "employees": [],
-            "fields": [],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-        actions_day1 = strategy.get_actions(farm_data_day1)
-        # Stratégie RADICALE: 3 champs + tracteur + 0 ouvrier (40k EUR restants!)
-        assert len([a for a in actions_day1 if "EMPRUNTER" in a]) == 0
-        assert len([a for a in actions_day1 if "ACHETER_CHAMP" in a]) == 3
-        assert len([a for a in actions_day1 if "ACHETER_TRACTEUR" in a]) == 1
-        assert len([a for a in actions_day1 if "EMPLOYER" in a]) == 0
+        commands = strategy.get_actions(farm)
 
-        # Jour 2: RIEN (juste production!)
-        farm_data_day2 = {
-            "money": 40000,
-            "employees": [],  # 0 ouvrier
-            "fields": [
-                {"bought": True, "content": "NONE", "location": f"FIELD{i}"}
-                for i in range(1, 4)
-            ],
-            "tractors": [{"id": 1}],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
-        }
-        actions_day2 = strategy.get_actions(farm_data_day2)
-        expansion_actions = [a for a in actions_day2 if "EMPLOYER" in a or "ACHETER" in a or "EMPRUNTER" in a]
-        assert len(expansion_actions) == 0
+        # Jour 1: doit acheter 3 champs + 1 tracteur
+        assert len(commands) == 4
+        assert commands.count("0 ACHETER_CHAMP") == 3
+        assert "0 ACHETER_TRACTEUR" in commands
 
-    def test_phase_2_production(self):
-        """Test de la phase 2: production."""
+    def test_initial_setup_day2(self):
+        """Teste le setup au jour 2."""
         strategy = Strategy()
-        strategy.turn_count = 10  # Phase de production
+        strategy._day = 1  # Car get_actions() incrémente _day
 
-        farm_data = {
-            "money": 50000,
-            "employees": [
-                {"id": 1, "location": "FARM", "tractor": None, "salary": 1000}
-            ],
-            "fields": [
-                {"bought": True, "content": "POTATO", "needed_water": 2, "location": "FIELD1"}
-            ],
-            "tractors": [],
-            "loans": [],
-            "soup_factory": {"stock": {}, "days_off": 0}
+        farm = self._create_farm_with_fields(3, tractors=1, employees=0)
+
+        commands = strategy.get_actions(farm)
+
+        # Jour 2: embaucher 3 employés
+        assert len(commands) == 3
+        assert commands.count("0 EMPLOYER") == 3
+
+    def test_watering_priority(self):
+        """Teste que l'arrosage est prioritaire."""
+        strategy = Strategy()
+        strategy._day = 10  # Après le setup initial
+
+        farm = self._create_farm_with_fields(2, tractors=1, employees=1)
+        # Ajouter des champs avec légumes qui ont besoin d'eau
+        farm["fields"][0]["content"] = "POTATO"
+        farm["fields"][0]["needed_water"] = 5
+        farm["fields"][1]["content"] = "TOMATO"
+        farm["fields"][1]["needed_water"] = 3
+
+        # Employé disponible à la FARM
+        farm["employees"][0]["location"] = "FARM"
+        farm["employees"][0]["tractor"] = None
+
+        commands = strategy.get_actions(farm)
+
+        # Doit arroser (au moins un champ)
+        arroser_commands = [c for c in commands if "ARROSER" in c]
+        assert len(arroser_commands) > 0
+
+    def test_harvest_mature_fields(self):
+        """Teste la récolte des champs mûrs."""
+        strategy = Strategy()
+        strategy._day = 20
+
+        farm = self._create_farm_with_fields(2, tractors=1, employees=1)
+        # Champ mûr (needed_water = 0)
+        farm["fields"][0]["content"] = "POTATO"
+        farm["fields"][0]["needed_water"] = 0
+
+        # Employé et tracteur disponibles
+        farm["employees"][0]["location"] = "FARM"
+        farm["employees"][0]["tractor"] = None
+
+        commands = strategy.get_actions(farm)
+
+        # Doit stocker
+        stocker_commands = [c for c in commands if "STOCKER" in c]
+        assert len(stocker_commands) > 0
+
+    def test_planting_rotation(self):
+        """Teste que le semis suit une rotation intelligente."""
+        strategy = Strategy()
+        strategy._day = 15
+
+        farm = self._create_farm_with_fields(3, tractors=1, employees=1)
+        # Stock déséquilibré : beaucoup de patates, peu de tomates
+        farm["soup_factory"]["stock"] = {
+            "POTATO": 100,
+            "TOMATO": 5,
+            "LEEK": 20,
+            "ONION": 20,
+            "ZUCCHINI": 20,
         }
 
-        actions = strategy.get_actions(farm_data)
+        # Champ vide disponible
+        farm["fields"][0]["content"] = "NONE"
+        farm["employees"][0]["location"] = "FARM"
+        farm["employees"][0]["tractor"] = None
 
-        # Devrait arroser en priorité
-        water_actions = [a for a in actions if "ARROSER" in a]
-        assert len(water_actions) >= 1
+        commands = strategy.get_actions(farm)
+
+        # Doit semer quelque chose
+        semer_commands = [c for c in commands if "SEMER" in c]
+        assert len(semer_commands) > 0
+
+        # Doit privilégier TOMATE (le moins abondant)
+        assert any("TOMATE" in c for c in semer_commands)
+
+    def test_no_cooking_when_poor(self):
+        """Teste qu'on ne cuisine pas si pas assez d'argent."""
+        strategy = Strategy()
+        strategy._day = 30
+
+        farm = self._create_farm_with_fields(2, tractors=1, employees=1)
+        farm["money"] = 10000  # Pas assez d'argent
+        farm["soup_factory"]["stock"] = {
+            "POTATO": 100,
+            "TOMATO": 100,
+            "LEEK": 100,
+            "ONION": 100,
+            "ZUCCHINI": 100,
+        }
+        farm["employees"][0]["location"] = "FARM"
+
+        commands = strategy.get_actions(farm)
+
+        # NE DOIT PAS cuisiner
+        cuisiner_commands = [c for c in commands if "CUISINER" in c]
+        assert len(cuisiner_commands) == 0
+
+    def test_cooking_when_rich_and_stocked(self):
+        """Teste qu'on cuisine si assez d'argent ET de stock ET pas de champs à arroser."""
+        strategy = Strategy()
+        strategy._day = 30
+
+        farm = self._create_farm_with_fields(2, tractors=1, employees=2)
+        farm["money"] = 60000  # Assez d'argent
+        farm["soup_factory"]["stock"] = {
+            "POTATO": 50,
+            "TOMATO": 50,
+            "LEEK": 50,
+            "ONION": 50,
+            "ZUCCHINI": 50,
+        }
+        farm["soup_factory"]["days_off"] = 0
+        farm["employees"][0]["location"] = "FARM"
+        farm["employees"][0]["tractor"] = None
+        farm["employees"][1]["location"] = "FARM"
+        farm["employees"][1]["tractor"] = None
+
+        # Champs mûrs (pas besoin d'arrosage) pour que la cuisine soit prioritaire
+        farm["fields"][0]["content"] = "POTATO"
+        farm["fields"][0]["needed_water"] = 0  # Mûr
+        farm["fields"][1]["content"] = "TOMATO"
+        farm["fields"][1]["needed_water"] = 0  # Mûr
+
+        commands = strategy.get_actions(farm)
+
+        # DOIT cuisiner (car pas d'arrosage nécessaire)
+        cuisiner_commands = [c for c in commands if "CUISINER" in c]
+        assert len(cuisiner_commands) > 0
+
+    def test_no_hiring_when_poor(self):
+        """Teste qu'on n'embauche pas si pas assez d'argent."""
+        strategy = Strategy()
+        strategy._day = 50
+
+        farm = self._create_farm_with_fields(3, tractors=1, employees=0)
+        farm["money"] = 50000  # Pas assez
+
+        commands = strategy.get_actions(farm)
+
+        # NE DOIT PAS embaucher
+        employer_commands = [c for c in commands if "EMPLOYER" in c]
+        assert len(employer_commands) == 0
+
+    def test_hiring_when_rich(self):
+        """Teste qu'on embauche si beaucoup d'argent."""
+        strategy = Strategy()
+        strategy._day = 50
+
+        farm = self._create_farm_with_fields(3, tractors=1, employees=1)
+        farm["money"] = 150000  # Beaucoup d'argent
+
+        commands = strategy.get_actions(farm)
+
+        # DOIT embaucher
+        employer_commands = [c for c in commands if "EMPLOYER" in c]
+        assert len(employer_commands) > 0
+
+    def test_fire_employee_when_bankrupt(self):
+        """Teste qu'on licencie en cas de faillite imminente."""
+        strategy = Strategy()
+        strategy._day = 100
+
+        farm = self._create_farm_with_fields(2, tractors=1, employees=2)
+        farm["money"] = 5000  # Très peu d'argent
+        farm["employees"][0]["salary"] = 2000
+        farm["employees"][1]["salary"] = 1500
+
+        commands = strategy.get_actions(farm)
+
+        # DOIT licencier
+        licencier_commands = [c for c in commands if "LICENCIER" in c]
+        assert len(licencier_commands) > 0
+
+        # Doit licencier celui avec le plus petit salaire (employé 2)
+        assert "0 LICENCIER 2" in commands
+
+    # Helpers
+
+    def _create_empty_farm(self):
+        """Crée une ferme vide pour les tests."""
+        return {
+            "money": 100000,
+            "fields": [
+                {"content": "NONE", "needed_water": 0, "bought": False, "location": f"FIELD{i}"}
+                for i in range(1, 6)
+            ],
+            "employees": [],
+            "tractors": [],
+            "soup_factory": {
+                "days_off": 0,
+                "stock": {
+                    "POTATO": 0,
+                    "TOMATO": 0,
+                    "LEEK": 0,
+                    "ONION": 0,
+                    "ZUCCHINI": 0,
+                },
+            },
+        }
+
+    def _create_farm_with_fields(self, num_fields: int, tractors: int = 0, employees: int = 0):
+        """Crée une ferme avec un nombre spécifique de champs, tracteurs et employés."""
+        farm = self._create_empty_farm()
+
+        # Acheter les champs
+        for i in range(num_fields):
+            farm["fields"][i]["bought"] = True
+
+        # Ajouter les tracteurs
+        for i in range(tractors):
+            farm["tractors"].append({"id": i + 1, "location": "FARM"})
+
+        # Ajouter les employés
+        for i in range(employees):
+            farm["employees"].append({
+                "id": i + 1,
+                "location": "FIELD1",
+                "tractor": None,
+                "salary": 1000,
+            })
+
+        return farm
