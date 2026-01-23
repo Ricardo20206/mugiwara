@@ -145,57 +145,59 @@ chronobio_client/
 └── README.md
 ```
 
-## 🎯 Stratégie actuelle : PROGRESSIVE - Légumes d'abord ✨
+## 🎯 Stratégie actuelle : PROGRESSIVE - Optimisée pour 5 ans (1825 jours) ✨
 
 ### Vue d'ensemble
 
-La stratégie **PROGRESSIVE** se concentre sur la production de légumes AVANT les soupes, évitant les blocages précoces dus aux salaires :
+La stratégie **PROGRESSIVE** est optimisée pour tenir **5 ans complets** (1825 jours) avec une gestion prudente des ressources et un buffer de sécurité élevé :
 
-- **🌱 Priorité légumes** : Production légumes uniquement jusqu'à avoir suffisamment de capital et stock
-- **💰 Capital sécurisé** : 3 champs + 1 tracteur = 60k dépensés, 40k EUR restants (vs 10k avant)
-- **👤 0 ouvriers au départ** : Le gérant (ID 0) cultive seul pour éviter les salaires
-- **📊 Conditions Phase 2** : Cuisiner SEULEMENT si 100k+ EUR ET 200+ de chaque légume
-- **🔄 Rotation complète** : COURGETTE, TOMATE, PATATE, POIREAU, OIGNON (diversité garantie)
-- **⚡ Expansion très prudente** : Embauche à 150k EUR, 2e tracteur à 200k EUR
-- **🧪 Qualité maximale** : 16 tests, 100% couverture, 0 erreur linter/mypy
+- **🌱 Priorité légumes** : Rotation complète des 5 légumes (PATATE, OIGNON, TOMATE, COURGETTE, POIREAU)
+- **💰 Buffer de sécurité** : 50 jours de salaires minimum avant tout achat
+- **👤 2 ouvriers par champ** : Rotation FARM/champ pour continuité de production
+- **🚜 1 tracteur par champ** : Récolte optimale avec STOCKER
+- **📊 Expansion limitée** : Max 3 champs et 3 tracteurs pour sécurité financière
+- **🔄 Production flexible** : Employés peuvent travailler depuis les champs (ARROSER, RÉCOLTER)
+- **⚡ Fallback gérant** : Le gérant peut SEMER si aucun ouvrier disponible
+- **🍲 Production soupes** : Stock > 500 + 3 légumes différents (50+ chacun)
+- **🧪 Qualité maximale** : Tests complets, 0 erreur linter/mypy
 
 ### 🔑 Changements Clés - Pourquoi cette stratégie?
 
-**Problème critique découvert :**
-- Le jeu anticipe les salaires sur **6 mois à 2 ans** avec augmentation de 1%/mois
-- **Embaucher tôt = blocage** même avec 175 jours de buffer visible!
-- Exemple: Jour 23, 11k EUR, 2 ouvriers (2k EUR/jour) → **BLOCAGE** malgré 5.5 jours buffer
+**Objectif : Tenir 5 ans (1825 jours) sans blocage**
 
-**Solution radicale :**
-1. ❌ **Stratégies avec employés précoces** : Blocage J3-J23 (testé avec 50k-350k EUR!)
-2. ✅ **Stratégie 0 ouvriers** : Survie garantie 1799 jours ✅
-3. ✅ **Gérant seul (ID 0)** : Peut semer/arroser/récolter/cuisiner SANS salaire!
-4. ✅ **Capital doublé** : 40k EUR vs 10k EUR (1 tracteur vs 2)
+**Solution optimisée :**
+1. ✅ **Buffer de sécurité de 50 jours** : Garantit la stabilité financière sur 5 ans
+2. ✅ **2 ouvriers par champ** : Rotation FARM/champ pour continuité de production
+3. ✅ **Limite d'expansion** : Max 3 champs, max 3 tracteurs pour sécurité financière
+4. ✅ **Production flexible** : Employés peuvent travailler depuis les champs (ARROSER, RÉCOLTER)
+5. ✅ **Fallback gérant** : Le gérant peut SEMER si aucun ouvrier disponible
+6. ✅ **Production de soupes accélérée** : Stock > 500 (au lieu de 1000) pour revenus réguliers
 
-### Phase 1 : PRODUCTION LÉGUMES (Jours 1-200+)
+### Phase 1 : SETUP INITIAL (Jours 1-2)
 
 **Configuration initiale optimale :**
 ```
-Jour 0: 3 CHAMPS + 1 TRACTEUR + 0 OUVRIERS
-        Dépenses: 30k (champs) + 30k (tracteur) = 60k EUR
-        Capital restant: 40k EUR
-        Salaires: 0 EUR/jour → BLOCAGE IMPOSSIBLE!
+Jour 1: 2 CHAMPS + 2 TRACTEURS (-80k EUR)
+Jour 2: 4 OUVRIERS (2 par champ) (-4k EUR)
+        Capital restant: ~16k EUR
+        Salaires: 4,000 EUR/jour
+        Autonomie: 4 jours (première récolte J15)
 ```
 
 **Activités Phase 1 :**
 ```
-Gérant (ID 0) travaille SEUL:
-- Sème 5 légumes en rotation (COURGETTE → TOMATE → PATATE → POIREAU → OIGNON)
-- Arrose les champs
-- Récolte avec le tracteur (1 champ/jour)
-- Vend les légumes → Accumulation capital
-- PAS de soupes (stock insuffisant)
+2 ouvriers par champ : rotation FARM/champ pour continuité
+- Chaque ouvrier gère son champ : SEMER → ARROSER → RÉCOLTER
+- Rotation complète: PATATE → OIGNON → TOMATE → COURGETTE → POIREAU
+- STOCKER avec tracteur (priorité) → +2000 stock
+- VENDRE avec gérant si pas de tracteur → ~3000€
+- Accumulation de stock progressif
 ```
 
 **Objectifs Phase 1 :**
-- ✅ Stock diversifié: 200+ de CHAQUE légume
-- ✅ Capital sécurisé: 100k+ EUR minimum
-- ✅ Survie garantie: AUCUN salaire à payer!
+- ✅ Stock diversifié: Rotation complète des 5 légumes
+- ✅ Production continue: 2 ouvriers par champ garantissent la continuité
+- ✅ Buffer de sécurité: 50 jours de salaires minimum avant expansion
 
 ### Phase 2 : SOUPES (Production accélérée)
 
