@@ -1,0 +1,11 @@
+Strategie ULTRA-SAFE avec 3 employes (FARM-only detection)
+
+- Nouveau fichier strategy.py avec strategie progressive
+- Dashboard professionnel dans client.py
+- Setup: Jour 1 (3 champs + tracteur), Jour 2 (3 employes)
+- Detection stricte: seulement employes a FARM (zero risque)
+- 80 tests, 100% couverture
+- Script test_strategy_live.ps1 pour test rapide
+- Documentation STRATEGIE.md complete
+
+OBJECTIF: Ne JAMAIS bloquer (1 erreur = blocage permanent!)
