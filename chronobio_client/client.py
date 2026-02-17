@@ -158,10 +158,16 @@ class PlayerGameClient(Client):
                 money = my_farm.get("money", 0)
                 employees = my_farm.get("employees", [])
                 total_salaries = sum(emp.get("salary", 0) for emp in employees)
+                events = my_farm.get("events", [])
 
                 print(f"\n{'='*70}")
                 print(f"❌ FERME BLOQUÉE AU JOUR {self._day}")
                 print(f"{'='*70}")
+                if events:
+                    print("🔍 Raison du blocage:")
+                    for event in events[-5:]:  # Afficher les 5 derniers événements
+                        print(f"   {event}")
+                    print()
                 print(f"💰 Capital final: {money:,.0f}€")
                 print(f"💸 Salaires: {total_salaries:,.0f}€/jour")
                 if total_salaries > 0:

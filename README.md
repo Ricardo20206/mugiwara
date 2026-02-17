@@ -1,3 +1,6 @@
+
+
+
 # Chronobio - Client de jeu
 
 Client pour le jeu Chronobio, un jeu de simulation de production de soupe bio.
@@ -139,7 +142,8 @@ chronobio_client/
 ├── chronobio_client/
 │   ├── __init__.py
 │   ├── __main__.py        # Point d'entrée
-│   └── client.py          # Client + STRATÉGIE (MODIFIEZ ICI)
+│   ├── client.py          # Client (boucle de jeu, envoi des commandes)
+│   └── strategy.py       # Stratégie PROGRESSIVE (MODIFIEZ ICI)
 ├── lancer_5clients.ps1    # Script de lancement
 ├── requirements.txt       # Dépendances
 └── README.md
@@ -152,12 +156,12 @@ chronobio_client/
 La stratégie **PROGRESSIVE** est optimisée pour tenir **5 ans complets** (1825 jours) avec une gestion prudente des ressources et un buffer de sécurité élevé :
 
 - **🌱 Priorité légumes** : Rotation complète des 5 légumes (PATATE, OIGNON, TOMATE, COURGETTE, POIREAU)
-- **💰 Buffer de sécurité** : 50 jours de salaires minimum avant tout achat
+- **💰 Buffer de sécurité** : 30 jours de salaires minimum avant expansion
 - **👤 2 ouvriers par champ** : Rotation FARM/champ pour continuité de production
 - **🚜 1 tracteur par champ** : Récolte optimale avec STOCKER
-- **📊 Expansion limitée** : Max 3 champs et 3 tracteurs pour sécurité financière
+- **📊 Expansion** : Jusqu'à 5 champs et 5 tracteurs (buffer 30 j de salaires)
 - **🔄 Production flexible** : Employés peuvent travailler depuis les champs (ARROSER, RÉCOLTER)
-- **⚡ Fallback gérant** : Le gérant peut SEMER si aucun ouvrier disponible
+- **👔 Gérant = vente uniquement** : VENDRE (légumes, soupe) ; SEMER et CUISINER = ouvriers seulement
 - **🍲 Production soupes** : Stock > 500 + 3 légumes différents (50+ chacun)
 - **🧪 Qualité maximale** : Tests complets, 0 erreur linter/mypy
 
@@ -166,11 +170,11 @@ La stratégie **PROGRESSIVE** est optimisée pour tenir **5 ans complets** (1825
 **Objectif : Tenir 5 ans (1825 jours) sans blocage**
 
 **Solution optimisée :**
-1. ✅ **Buffer de sécurité de 50 jours** : Garantit la stabilité financière sur 5 ans
+1. ✅ **Buffer de sécurité (30 j)** : Garantit la stabilité financière sur 5 ans
 2. ✅ **2 ouvriers par champ** : Rotation FARM/champ pour continuité de production
-3. ✅ **Limite d'expansion** : Max 3 champs, max 3 tracteurs pour sécurité financière
+3. ✅ **Expansion progressive** : Jusqu'à 5 champs, 5 tracteurs (buffer 30 j)
 4. ✅ **Production flexible** : Employés peuvent travailler depuis les champs (ARROSER, RÉCOLTER)
-5. ✅ **Fallback gérant** : Le gérant peut SEMER si aucun ouvrier disponible
+5. ✅ **Gérant = vente** : Le gérant vend (VENDRE) ; SEMER et CUISINER réservés aux ouvriers
 6. ✅ **Production de soupes accélérée** : Stock > 500 (au lieu de 1000) pour revenus réguliers
 
 ### Phase 1 : SETUP INITIAL (Jours 1-2)
@@ -197,7 +201,7 @@ Jour 2: 4 OUVRIERS (2 par champ) (-4k EUR)
 **Objectifs Phase 1 :**
 - ✅ Stock diversifié: Rotation complète des 5 légumes
 - ✅ Production continue: 2 ouvriers par champ garantissent la continuité
-- ✅ Buffer de sécurité: 50 jours de salaires minimum avant expansion
+- ✅ Buffer de sécurité: 30 jours de salaires minimum avant expansion
 
 ### Phase 2 : SOUPES (Production accélérée)
 
@@ -215,16 +219,15 @@ Jour 2: 4 OUVRIERS (2 par champ) (-4k EUR)
 - Diversité garantie (3+ légumes différents)
 ```
 
-### Phase 3 : EXPANSION PRUDENTE (Buffer de 50 jours minimum)
+### Phase 3 : EXPANSION PRUDENTE (Buffer 30 jours)
 
-**Expansion très progressive :**
+**Expansion progressive :**
 ```
-✅ Buffer de sécurité: 50 jours de salaires minimum
-✅ Acheter tracteur: 50k+ EUR + 50 jours de sécurité
-✅ Acheter champ: 150k+ EUR + 70 jours de sécurité
-✅ Embaucher: 50k+ EUR + 50 jours de sécurité
-✅ Max 3 champs (sécurité financière)
-✅ Max 3 tracteurs
+✅ Buffer de sécurité: 30 jours de salaires minimum
+✅ Acheter tracteur: 35k+ EUR + 30 jours de sécurité
+✅ Acheter champ: 80k+ EUR + 40 jours de sécurité
+✅ Embaucher: 30k+ EUR + 30 jours de sécurité
+✅ Jusqu'à 5 champs, 5 tracteurs
 ```
 
 **Protection anti-blocage :**
@@ -241,31 +244,29 @@ Jour 2: 4 OUVRIERS (2 par champ) (-4k EUR)
 
 ### Priorités d'actions (ordre d'exécution)
 
-1. **SEMER** (rotation complète sur tous les champs)
+1. **RÉCOLTER / STOCKER** (champs mûrs en priorité)
+   - STOCKER avec tracteur (priorité) → +2000 stock (action multi-jour : employé + tracteur suivis jusqu’à retour à FARM)
+   - VENDRE avec gérant si pas de tracteur → ~3000€ (gérant occupé 2 jours)
+   - Un employé en STOCKER ou un tracteur en STOCKER n’est pas réassigné avant la fin
+
+2. **SEMER** (rotation complète sur tous les champs)
    - Rotation: PATATE → OIGNON → TOMATE → COURGETTE → POIREAU
+   - Uniquement ouvriers (le gérant ne sème pas)
    - Ouvriers dans le champ correspondant OU à FARM
-   - Fallback: Gérant (id=0) si aucun ouvrier disponible
 
-2. **ARROSER** (maintenir la croissance)
+3. **ARROSER** (maintenir la croissance)
    - Ouvriers dans le champ correspondant OU à FARM
-   - Priorité aux champs avec le moins d'eau restante
-   - Continuité de production même si tous dans les champs
-
-3. **RÉCOLTER** (production de stock)
-   - STOCKER avec tracteur (priorité) → +2000 stock
-   - VENDRE avec gérant si pas de tracteur → ~3000€
-   - Ouvriers dans le champ correspondant OU à FARM
+   - Priorité aux champs avec le moins d’eau restante
 
 4. **CUISINER** (revenus réguliers)
-   - Conditions: stock > 500 + 3 légumes différents (50+ chacun)
-   - Production continue avec 1-2 cuisiniers
-   - Revenus pour maintenir le buffer de sécurité
+   - Conditions: stock > 500 + 3 légumes différents (50+ chacun) ; ou mode survie si capital faible
+   - Uniquement ouvriers déjà à SOUP_FACTORY (gérant = vente de la soupe, ne cuisine pas)
+   - Jusqu’à 3 cuisiniers par tour
 
-5. **EXPANSION** (buffer de 50 jours minimum)
-   - Acheter tracteur: 50k+ EUR + 50 jours de sécurité
-   - Acheter champ: 150k+ EUR + 70 jours de sécurité
-   - Embaucher: 50k+ EUR + 50 jours de sécurité
-   - Max 3 champs, 3 tracteurs
+5. **EXPANSION** (1 seule action gérant/jour, si gérant libre)
+   - Le gérant ne peut pas EMPLOYER/ACHETER pendant les 2 jours suivant un VENDRE
+   - Acheter tracteur, champ ou embaucher selon buffer et besoins
+   - Jusqu’à 5 champs, 5 tracteurs
 
 ### Modifier la stratégie
 
@@ -457,10 +458,16 @@ Une ferme se bloque quand elle n'a **plus assez d'argent pour payer les salaires
 - Augmenter la fréquence de vente (`if total_stock >= 10` au lieu de 15)
 - Favoriser les légumes rentables (plus de POIREAU)
 
-### Erreur "Employee is already busy"
-- **Normal** : Un ouvrier qui travaille ne peut pas recevoir de nouvelle action
-- La stratégie actuelle vérifie `location == "FARM"` pour éviter ce problème
-- Si erreur persiste, vérifiez que vous utilisez bien `available_employees`
+### Erreurs d’actions invalides (stratégie mise à jour)
+
+- **"The farm owner is already busy"**  
+  Le gérant ne peut faire qu’une action par jour (VENDRE, EMPLOYER, ACHETER…). Après un VENDRE, il est occupé 2 jours. La stratégie utilise `_gerant_busy_until` et n’envoie plus EMPLOYER/ACHETER tant que le gérant n’est pas libre.
+
+- **"Employee X is already busy"**  
+  STOCKER est une action multi-jour. La stratégie enregistre chaque STOCKER dans `_last_actions` et ne réassigne pas l’employé avant qu’il soit revenu à FARM sans tracteur.
+
+- **"Tractor X is already used"**  
+  Un tracteur en cours de STOCKER ne doit pas être réassigné. La stratégie suit les tracteurs utilisés dans `_stocker_tractors` et les exclut de `used_tractors` jusqu’à la fin du STOCKER.
 
 ### Actions pas visibles dans le Viewer
 - Vérifiez le **panneau "Events"** sur le côté droit
@@ -761,7 +768,7 @@ start htmlcov/index.html
    - Arguments optionnels (-a address)
    - Gestion des erreurs et interruptions
 
-5. **`tests/test_strategy.py`** (16 tests)
+5. **`tests/test_strategy.py`** (10 tests)
    - Stratégie ÉQUILIBRÉE complète
    - Expansion progressive (jours 0, 1, 2, 5, 10, 15, 20+)
    - Actions de production (récolte, cuisine, arrosage, semis)
